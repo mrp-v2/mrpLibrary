@@ -44,10 +44,11 @@ println('Minecraft: ' + mcVersion + ' Forge: ' + forgeVersion + ' Mapping: ' + m
 
 minecraft {
     mappings channel: mapping.split('\\|')[0], version: mapping.split('\\|')[1]
-    File accessTransformerFile = file('src/main/resources/META-INF/accesstransformer.cfg')
+    String accessTransformerPath = 'src/main/resources/META-INF/accesstransformer.cfg'
+    File accessTransformerFile = file(accessTransformerPath)
     if (accessTransformerFile.exists())
     {
-        println 'Access transformer configuration found at ' + accessTransformerFile.toString()
+        println 'Access transformer configuration found at ' + accessTransformerPath
         accessTransformer = accessTransformerFile
     }
     runs {
