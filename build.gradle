@@ -11,9 +11,13 @@ buildscript {
         }
         jcenter()
         mavenCentral()
+        maven {
+            url = 'https://dist.creeper.host/Sponge/maven'
+        }
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
@@ -53,9 +57,9 @@ minecraft {
     }
     runs {
         client {
-            //property 'mixin.env.disableRefMap', 'true'
+            property 'mixin.env.disableRefMap', 'true'
             workingDirectory project.file('run')
-            //arg "-mixin.config=" + archivesBaseName + ".mixins.json"
+            arg "-mixin.config=" + archivesBaseName + ".mixins.json"
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             mods {
@@ -65,9 +69,9 @@ minecraft {
             }
         }
         server {
-            //property 'mixin.env.disableRefMap', 'true'
+            property 'mixin.env.disableRefMap', 'true'
             workingDirectory project.file('run')
-            //arg "-mixin.config=" + archivesBaseName + ".mixins.json"
+            arg "-mixin.config=" + archivesBaseName + ".mixins.json"
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             mods {
@@ -77,9 +81,9 @@ minecraft {
             }
         }
         data {
-            //property 'mixin.env.disableRefMap', 'true'
+            property 'mixin.env.disableRefMap', 'true'
             workingDirectory project.file('run')
-            //arg "-mixin.config=" + archivesBaseName + ".mixins.json"
+            arg "-mixin.config=" + archivesBaseName + ".mixins.json"
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             args '--mod', modId, '--all', '--output', file('src/generated/resources/'), '--existing',
@@ -181,4 +185,10 @@ task regenerateUpdateJson {
         String jsonString = new GsonBuilder().setPrettyPrinting().create().toJson(newUpdateJson)
         new File(updateJsonLocation).text = jsonString
     }
+}
+
+apply plugin: 'org.spongepowered.mixin'
+
+mixin {
+    add sourceSets.main, "${modId}.refmap.json"
 }
