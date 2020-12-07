@@ -168,12 +168,16 @@ task regenerateUpdateJson {
         newUpdateJson.addProperty('homepage', homepageURL)
         JsonObject promos = new JsonObject()
         newUpdateJson.add('promos', promos)
-        JsonObject oldUpdateJson = new JsonParser().
-                parse(new File(updateJsonLocation).text).getAsJsonObject().
-                getAsJsonObject('promos')
-        for (Map.Entry<String, JsonElement> entry : oldUpdateJson.entrySet())
+        File oldUpdateJsonFile = new File(updateJsonLocation)
+        if (oldUpdateJsonFile.exists())
         {
-            promos.addProperty(entry.key, entry.value.asString)
+            JsonObject oldUpdateJson = new JsonParser().
+                    parse(new File(updateJsonLocation).text).getAsJsonObject().
+                    getAsJsonObject('promos')
+            for (Map.Entry<String, JsonElement> entry : oldUpdateJson.entrySet())
+            {
+                promos.addProperty(entry.key, entry.value.asString)
+            }
         }
         promos.addProperty("${mcVersion}-recommended", (String) version)
         promos.addProperty("${mcVersion}-latest", (String) version)
