@@ -1,0 +1,11 @@
+# idea
+/.idea/
+
+# gradle
+/build/
+/.gradle/
+/gradlew.bat
+
+# other
+/run/
+/logs/
