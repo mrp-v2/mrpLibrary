@@ -3,7 +3,7 @@
     "package": "mrp_v2.mrplibrary.mixin",
     "compatibilityLevel": "JAVA_8",
     "mixins": [
-        "AbstractBlockPropertiesMixin", "ModelBuilderMixin"
+        "AbstractBlockPropertiesMixin"
     ],
     "injectors": {
         "defaultRequire": 1
