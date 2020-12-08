@@ -4,7 +4,7 @@
     "compatibilityLevel": "JAVA_8",
     "refmap": "mrplibrary.refmap.json",
     "mixins": [
-        "AbstractBlockPropertiesMixin"
+        "AbstractBlockPropertiesMixin", "ModelBuilderMixin"
     ],
     "injectors": {
         "defaultRequire": 1
