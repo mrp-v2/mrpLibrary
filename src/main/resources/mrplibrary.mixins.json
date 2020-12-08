@@ -2,7 +2,6 @@
     "required": true,
     "package": "mrp_v2.mrplibrary.mixin",
     "compatibilityLevel": "JAVA_8",
-    "refmap": "mrplibrary.refmap.json",
     "mixins": [
         "AbstractBlockPropertiesMixin", "ModelBuilderMixin"
     ],
