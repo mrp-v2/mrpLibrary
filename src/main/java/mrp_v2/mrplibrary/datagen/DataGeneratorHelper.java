@@ -32,24 +32,23 @@ public class DataGeneratorHelper
         this.dataGenerator.addProvider(new LootTableProvider(this.dataGenerator, blockLootTables, this.modId));
     }
 
-    public void addRecipeGenerator(
-            BiFunction<DataGenerator, String, ? extends RecipeProvider> recipeGeneratorConstructor)
+    public void addRecipeProvider(BiFunction<DataGenerator, String, ? extends RecipeProvider> recipeProviderConstructor)
     {
-        this.dataGenerator.addProvider(recipeGeneratorConstructor.apply(this.dataGenerator, this.modId));
+        this.dataGenerator.addProvider(recipeProviderConstructor.apply(this.dataGenerator, this.modId));
     }
 
-    public void addItemTagGenerator(
-            Function4<DataGenerator, net.minecraft.data.BlockTagsProvider, String, ExistingFileHelper, ? extends ItemTagsProvider> itemTagGeneratorConstructor)
+    public void addItemTagsProvider(
+            Function4<DataGenerator, net.minecraft.data.BlockTagsProvider, String, ExistingFileHelper, ? extends ItemTagsProvider> itemTagsProviderConstructor)
     {
-        this.dataGenerator.addProvider(itemTagGeneratorConstructor
+        this.dataGenerator.addProvider(itemTagsProviderConstructor
                 .apply(this.dataGenerator, this.blockTagsProvider, this.modId, this.existingFileHelper));
     }
 
-    public void addBlockTagGenerator(
-            Function3<DataGenerator, String, ExistingFileHelper, ? extends BlockTagsProvider> blockTagGeneratorConstructor)
+    public void addBlockTagsProvider(
+            Function3<DataGenerator, String, ExistingFileHelper, ? extends BlockTagsProvider> blockTagsProviderConstructor)
     {
         this.dataGenerator.addProvider(
-                blockTagGeneratorConstructor.apply(this.dataGenerator, this.modId, this.existingFileHelper));
+                blockTagsProviderConstructor.apply(this.dataGenerator, this.modId, this.existingFileHelper));
     }
 
     public void addBlockStateProvider(
