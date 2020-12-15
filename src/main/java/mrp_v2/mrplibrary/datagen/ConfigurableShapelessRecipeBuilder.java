@@ -5,10 +5,7 @@ import com.google.gson.JsonObject;
 import mrp_v2.mrplibrary.item.crafting.ConfigurableShapelessRecipe;
 import mrp_v2.mrplibrary.item.crafting.IngredientOverride;
 import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.ICriterionInstance;
-import net.minecraft.advancements.IRequirementsStrategy;
-import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.data.IFinishedRecipe;
 import net.minecraft.data.ShapelessRecipeBuilder;
 import net.minecraft.item.Item;
@@ -24,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class ConfigurableShapelessRecipeBuilder extends ShapelessRecipeBuilder
+public class ConfigurableShapelessRecipeBuilder extends mrp_v2.mrplibrary.datagen.ShapelessRecipeBuilder
 {
     final Set<DataGenIngredientOverride> overrides;
 
@@ -91,23 +88,12 @@ public class ConfigurableShapelessRecipeBuilder extends ShapelessRecipeBuilder
         return this;
     }
 
-    /**
-     * Copied from {@link ShapelessRecipeBuilder#build(Consumer, ResourceLocation)}.
-     * Modified to use {@link Result} instead of {@link ShapelessRecipeBuilder.Result}.
-     */
     @Override public void build(Consumer<IFinishedRecipe> consumerIn, ResourceLocation id)
     {
-        this.validate(id);
-        this.advancementBuilder.withParentId(new ResourceLocation("recipes/root"))
-                .withCriterion("has_the_recipe", RecipeUnlockedTrigger.create(id))
-                .withRewards(AdvancementRewards.Builder.recipe(id)).withRequirementsStrategy(IRequirementsStrategy.OR);
-        consumerIn
-                .accept(new Result(id, this.result, this.count, this.group == null ? "" : this.group, this.ingredients,
-                        this.advancementBuilder, new ResourceLocation(id.getNamespace(),
-                        "recipes/" + this.result.getGroup().getPath() + "/" + id.getPath()), this.overrides));
+        build(consumerIn, id, (a, b, c, d, e, f, g) -> new Result(a, b, c, d, e, f, g, this.overrides));
     }
 
-    public class Result extends ShapelessRecipeBuilder.Result
+    public static class Result extends ShapelessRecipeBuilder.Result
     {
         private final Set<DataGenIngredientOverride> overrides;
 

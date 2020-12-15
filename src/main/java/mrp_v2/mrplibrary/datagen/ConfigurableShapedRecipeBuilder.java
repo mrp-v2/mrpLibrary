@@ -5,10 +5,7 @@ import com.google.gson.JsonObject;
 import mrp_v2.mrplibrary.item.crafting.ConfigurableShapedRecipe;
 import mrp_v2.mrplibrary.item.crafting.IngredientOverride;
 import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.ICriterionInstance;
-import net.minecraft.advancements.IRequirementsStrategy;
-import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.data.IFinishedRecipe;
 import net.minecraft.data.ShapedRecipeBuilder;
 import net.minecraft.item.Item;
@@ -25,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class ConfigurableShapedRecipeBuilder extends ShapedRecipeBuilder
+public class ConfigurableShapedRecipeBuilder extends mrp_v2.mrplibrary.datagen.ShapedRecipeBuilder
 {
     final Set<DataGenIngredientOverride> overrides;
 
@@ -86,19 +83,9 @@ public class ConfigurableShapedRecipeBuilder extends ShapedRecipeBuilder
         return this;
     }
 
-    /**
-     * Copied from {@link ShapedRecipeBuilder#build(Consumer, ResourceLocation)}.
-     * Modified to use {@link Result} instead of {@link ShapedRecipeBuilder.Result}.
-     */
     @Override public void build(Consumer<IFinishedRecipe> consumerIn, ResourceLocation id)
     {
-        this.validate(id);
-        this.advancementBuilder.withParentId(new ResourceLocation("recipes/root"))
-                .withCriterion("has_the_recipe", RecipeUnlockedTrigger.create(id))
-                .withRewards(AdvancementRewards.Builder.recipe(id)).withRequirementsStrategy(IRequirementsStrategy.OR);
-        consumerIn.accept(new Result(id, this.result, this.count, this.group == null ? "" : this.group, this.pattern,
-                this.key, this.advancementBuilder, new ResourceLocation(id.getNamespace(),
-                "recipes/" + this.result.getGroup().getPath() + "/" + id.getPath()), this.overrides));
+        build(consumerIn, id, (a, b, c, d, e, f, g, h) -> new Result(a, b, c, d, e, f, g, h, this.overrides));
     }
 
     public class Result extends ShapedRecipeBuilder.Result
