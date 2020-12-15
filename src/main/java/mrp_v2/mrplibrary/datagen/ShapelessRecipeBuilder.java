@@ -22,6 +22,16 @@ public class ShapelessRecipeBuilder extends net.minecraft.data.ShapelessRecipeBu
         super(resultIn, countIn);
     }
 
+    public static ShapelessRecipeBuilder shapelessRecipe(IItemProvider resultIn)
+    {
+        return shapelessRecipe(resultIn, 1);
+    }
+
+    public static ShapelessRecipeBuilder shapelessRecipe(IItemProvider resultIn, int countIn)
+    {
+        return new ShapelessRecipeBuilder(resultIn, countIn);
+    }
+
     @Override public ShapelessRecipeBuilder addIngredient(ITag<Item> tagIn)
     {
         super.addIngredient(tagIn);

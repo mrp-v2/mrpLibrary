@@ -23,6 +23,16 @@ public class ShapedRecipeBuilder extends net.minecraft.data.ShapedRecipeBuilder
         super(resultIn, countIn);
     }
 
+    public static ShapedRecipeBuilder shapedRecipe(IItemProvider resultIn)
+    {
+        return shapedRecipe(resultIn, 1);
+    }
+
+    public static ShapedRecipeBuilder shapedRecipe(IItemProvider resultIn, int countIn)
+    {
+        return new ShapedRecipeBuilder(resultIn, countIn);
+    }
+
     @Override public ShapedRecipeBuilder key(Character symbol, ITag<Item> tagIn)
     {
         super.key(symbol, tagIn);
