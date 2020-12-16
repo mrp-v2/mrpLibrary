@@ -27,6 +27,19 @@ public class DataGeneratorHelper
                 new net.minecraft.data.BlockTagsProvider(this.dataGenerator, this.modId, this.existingFileHelper);
     }
 
+    public void addTextureProvider(
+            Function3<DataGenerator, ExistingFileHelper, String, ? extends TextureProvider> textureProviderConstructor)
+    {
+        this.dataGenerator
+                .addProvider(textureProviderConstructor.apply(this.dataGenerator, this.existingFileHelper, this.modId));
+    }
+
+    public void addParticleProvider(
+            BiFunction<DataGenerator, String, ? extends ParticleProvider> particleProviderConstructor)
+    {
+        this.dataGenerator.addProvider(particleProviderConstructor.apply(this.dataGenerator, this.modId));
+    }
+
     public void addLootTables(BlockLootTables blockLootTables)
     {
         this.dataGenerator.addProvider(new LootTableProvider(this.dataGenerator, blockLootTables, this.modId));
