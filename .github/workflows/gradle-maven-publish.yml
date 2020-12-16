@@ -1,4 +1,4 @@
-name: Publish to GitHub Packages Maven with Gradle
+name: Publish to GitHub Packages using Gradle
 
 on:
   create:
