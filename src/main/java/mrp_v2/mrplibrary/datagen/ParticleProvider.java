@@ -23,9 +23,9 @@ import java.util.function.Consumer;
 public abstract class ParticleProvider implements IDataProvider
 {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private final DataGenerator generator;
-    private final String modId;
+    public final String modId;
 
     protected ParticleProvider(DataGenerator generator, String modId)
     {

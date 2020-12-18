@@ -28,8 +28,9 @@ public abstract class TextureProvider implements IDataProvider
 {
     private static final Logger LOGGER = LogManager.getLogger();
     private final DataGenerator generator;
-    private final ExistingFileHelper existingFileHelper;
-    private final String modId;
+    public static int ALPHA_MASK = 0xFF000000;
+    public final String modId;
+    protected final ExistingFileHelper existingFileHelper;
 
     public TextureProvider(DataGenerator generator, ExistingFileHelper existingFileHelper, String modId)
     {
@@ -53,6 +54,44 @@ public abstract class TextureProvider implements IDataProvider
         Preconditions.checkArgument(g < 256 && g >= 0);
         Preconditions.checkArgument(b < 256 && b >= 0);
         return (a << 24) | (r << 16) | (g << 8) | b;
+    }
+
+    public static void adjustLevels(BufferedImage texture, int startX, int startY, int w, int h, double levelAdjustment)
+    {
+        Preconditions.checkArgument(levelAdjustment > 0);
+        for (int x = startX; x < startX + w; x++)
+        {
+            for (int y = startY; y < startY + h; y++)
+            {
+                int color = texture.getRGB(x, y);
+                int r = (color >> 16) & 0xFF, g = (color >> 8) & 0xFF, b = color & 0xFF;
+                r = adjustLevel(r, levelAdjustment);
+                g = adjustLevel(g, levelAdjustment);
+                b = adjustLevel(b, levelAdjustment);
+                color = (color & ALPHA_MASK) | (r << 16) | (g << 8) | b;
+                texture.setRGB(x, y, color);
+            }
+        }
+    }
+
+    protected static int adjustLevel(int i, double levelAdjustment)
+    {
+        return (int) Math.max(0, Math.min(255, 255 * Math.pow(i / 255d, levelAdjustment)));
+    }
+
+    public static void makeGrayscale(BufferedImage texture, int startX, int startY, int w, int h)
+    {
+        for (int x = startX; x < startX + w; x++)
+        {
+            for (int y = startY; y < startY + h; y++)
+            {
+                int color = texture.getRGB(x, y);
+                int r = (color >> 16) & 0xFF, g = (color >> 8) & 0xFF, b = color & 0xFF;
+                int gray = (int) Math.round(r * 0.299d + g * 0.587d + b * 0.114d);
+                color = (color & ALPHA_MASK) | (gray << 16) | (gray << 8) | gray;
+                texture.setRGB(x, y, color);
+            }
+        }
     }
 
     public static void adjustHSB(BufferedImage texture, int startX, int startY, int w, int h, float hueChange,
