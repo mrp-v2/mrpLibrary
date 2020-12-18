@@ -58,25 +58,53 @@ public abstract class TextureProvider implements IDataProvider
 
     public static void adjustLevels(BufferedImage texture, int startX, int startY, int w, int h, double levelAdjustment)
     {
+        adjustLevels(texture, startX, startY, w, h, levelAdjustment, 0, 255, 0, 255);
+    }
+
+    public static void adjustLevels(BufferedImage texture, int startX, int startY, int w, int h, double levelAdjustment,
+            int inLow, int inHigh, int outLow, int outHigh)
+    {
         Preconditions.checkArgument(levelAdjustment > 0);
+        Preconditions.checkArgument(inLow >= 0);
+        Preconditions.checkArgument(inHigh <= 255);
+        Preconditions.checkArgument(inLow < inHigh);
+        Preconditions.checkArgument(outLow >= 0);
+        Preconditions.checkArgument(outHigh <= 255);
+        Preconditions.checkArgument(outLow < outHigh);
         for (int x = startX; x < startX + w; x++)
         {
             for (int y = startY; y < startY + h; y++)
             {
                 int color = texture.getRGB(x, y);
                 int r = (color >> 16) & 0xFF, g = (color >> 8) & 0xFF, b = color & 0xFF;
-                r = adjustLevel(r, levelAdjustment);
-                g = adjustLevel(g, levelAdjustment);
-                b = adjustLevel(b, levelAdjustment);
+                r = adjustLevel(r, levelAdjustment, inLow, inHigh, outLow, outHigh);
+                g = adjustLevel(g, levelAdjustment, inLow, inHigh, outLow, outHigh);
+                b = adjustLevel(b, levelAdjustment, inLow, inHigh, outLow, outHigh);
                 color = (color & ALPHA_MASK) | (r << 16) | (g << 8) | b;
                 texture.setRGB(x, y, color);
             }
         }
     }
 
+    protected static int adjustLevel(int i, double levelAdjustment, int inLow, int inHigh, int outLow, int outHigh)
+    {
+        i = i - inLow;
+        if (i < 0)
+        {
+            return outLow;
+        } else if (i + inLow >= inHigh)
+        {
+            return outHigh;
+        } else
+        {
+            return (int) Math.max(0, Math.min(255,
+                    outLow + (outHigh - outLow) * Math.pow(i / (double) (inHigh - inLow), levelAdjustment)));
+        }
+    }
+
     protected static int adjustLevel(int i, double levelAdjustment)
     {
-        return (int) Math.max(0, Math.min(255, 255 * Math.pow(i / 255d, levelAdjustment)));
+        return adjustLevel(i, levelAdjustment, 0, 255, 0, 255);
     }
 
     public static void makeGrayscale(BufferedImage texture, int startX, int startY, int w, int h)
