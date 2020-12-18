@@ -127,10 +127,10 @@ public abstract class TextureProvider implements IDataProvider
     }
 
     public static void adjustHSB(BufferedImage texture, int startX, int startY, int w, int h, int hueChange,
-            int saturationChange, int brightnessChange)
+            int saturation, int brightnessChange)
     {
         float hueShift = hueChange / 360f;
-        int saturationFactor = saturationChange * 1024 / 100;
+        int saturationFactor = saturation * 1024 / 100;
         int bWeight = Math.abs(brightnessChange) * 255 / 100;
         int cWeight = 255 - bWeight;
         int weightedB = (brightnessChange > 0 ? 255 : 0) * bWeight;
@@ -263,5 +263,10 @@ public abstract class TextureProvider implements IDataProvider
             LOGGER.error("Couldn't read texture {}", textureLoc, ioException);
         }
         return null;
+    }
+
+    public void promiseGeneration(ResourceLocation texture)
+    {
+        this.existingFileHelper.trackGenerated(texture, ResourcePackType.CLIENT_RESOURCES, ".png", "textures");
     }
 }
