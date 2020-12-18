@@ -97,8 +97,7 @@ public abstract class TextureProvider implements IDataProvider
             return outHigh;
         } else
         {
-            return (int) Math.max(0, Math.min(255,
-                    outLow + (outHigh - outLow) * Math.pow(i / (double) (inHigh - inLow), levelAdjustment)));
+            return clampToByte(outLow + (outHigh - outLow) * Math.pow(i / (double) (inHigh - inLow), levelAdjustment));
         }
     }
 
@@ -122,37 +121,56 @@ public abstract class TextureProvider implements IDataProvider
         }
     }
 
-    public static void adjustHSB(BufferedImage texture, int startX, int startY, int w, int h, float hueChange,
-            float saturationChange, float brightnessChange)
+    public static int clampToByte(double value)
     {
+        return (int) Math.max(0, Math.min(255, value));
+    }
+
+    public static void adjustHSB(BufferedImage texture, int startX, int startY, int w, int h, int hueChange,
+            int saturationChange, int brightnessChange)
+    {
+        float hueShift = hueChange / 360f;
+        int saturationFactor = saturationChange * 1024 / 100;
+        int bWeight = Math.abs(brightnessChange) * 255 / 100;
+        int cWeight = 255 - bWeight;
+        int weightedB = (brightnessChange > 0 ? 255 : 0) * bWeight;
         for (int x = startX; x < startX + w; x++)
         {
             for (int y = startY; y < startY + h; y++)
             {
                 Color color = new Color(texture.getRGB(x, y), true);
-                float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
-                hsb[0] += hueChange;
-                hsb[1] += saturationChange;
-                if (hsb[1] < 0)
-                {
-                    hsb[1] = 0;
-                } else if (hsb[1] > 1)
-                {
-                    hsb[1] = 1;
-                }
-                hsb[2] += brightnessChange;
-                if (hsb[2] < 0)
-                {
-                    hsb[2] = 0;
-                } else if (hsb[2] > 1)
-                {
-                    hsb[2] = 1;
-                }
+                int intensity =
+                        clampToByte((color.getRed() * 19595 + color.getGreen() * 38470 + color.getBlue() * 7471) >> 16);
+                int r = adjustSaturation(color.getRed(), intensity, saturationFactor), g =
+                        adjustSaturation(color.getGreen(), intensity, saturationFactor), b =
+                        adjustSaturation(color.getBlue(), intensity, saturationFactor);
+                float[] hsb = Color.RGBtoHSB(r, g, b, null);
+                hsb[0] += hueShift;
                 int rgb = Color.HSBtoRGB(hsb[0], hsb[1], hsb[2]);
                 int argb = (color.getAlpha() << 24) | rgb;
-                texture.setRGB(x, y, argb);
+                color = new Color(argb, true);
+                r = adjustBrightness(color.getRed(), cWeight, weightedB);
+                g = adjustBrightness(color.getGreen(), cWeight, weightedB);
+                b = adjustBrightness(color.getBlue(), cWeight, weightedB);
+                color = new Color(r, g, b, color.getAlpha());
+                texture.setRGB(x, y, color.getRGB() | (color.getAlpha() << 24));
             }
         }
+    }
+
+    public static int clampToByte(int value)
+    {
+        return Math.max(0, Math.min(255, value));
+    }
+
+    private static int adjustSaturation(int i, int intensity, int saturationFactor)
+    {
+        return clampToByte(intensity * 1024 + (i - intensity) * saturationFactor >> 10);
+    }
+
+    private static int adjustBrightness(int i, int iWeight, int weightedB)
+    {
+        return (i * iWeight + weightedB) / 256;
     }
 
     public static int[] color(int color, int length)
