@@ -133,9 +133,21 @@ public abstract class TextureProvider implements IDataProvider
                 float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
                 hsb[0] += hueChange;
                 hsb[1] += saturationChange;
-                hsb[1] = (float) (hsb[1] - Math.floor(hsb[1]));
+                if (hsb[1] < 0)
+                {
+                    hsb[1] = 0;
+                } else if (hsb[1] > 1)
+                {
+                    hsb[1] = 1;
+                }
                 hsb[2] += brightnessChange;
-                hsb[2] = (float) (hsb[2] - Math.floor(hsb[2]));
+                if (hsb[2] < 0)
+                {
+                    hsb[2] = 0;
+                } else if (hsb[2] > 1)
+                {
+                    hsb[2] = 1;
+                }
                 int rgb = Color.HSBtoRGB(hsb[0], hsb[1], hsb[2]);
                 int argb = (color.getAlpha() << 24) | rgb;
                 texture.setRGB(x, y, argb);
