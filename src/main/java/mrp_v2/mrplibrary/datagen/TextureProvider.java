@@ -16,12 +16,14 @@ import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.BiConsumer;
 
 public abstract class TextureProvider implements IDataProvider
@@ -31,12 +33,14 @@ public abstract class TextureProvider implements IDataProvider
     public static int ALPHA_MASK = 0xFF000000;
     public final String modId;
     protected final ExistingFileHelper existingFileHelper;
+    private final Map<ResourceLocation, BufferedImage> providedTextures;
 
     public TextureProvider(DataGenerator generator, ExistingFileHelper existingFileHelper, String modId)
     {
         this.generator = generator;
         this.existingFileHelper = existingFileHelper;
         this.modId = modId;
+        this.providedTextures = new HashMap<>();
     }
 
     public static int color(int r, int g, int b)
@@ -185,10 +189,9 @@ public abstract class TextureProvider implements IDataProvider
 
     @Override public void act(DirectoryCache cache)
     {
-        Set<ResourceLocation> locationSet = new HashSet<>();
         addTextures((texture, location) ->
         {
-            if (!locationSet.add(location))
+            if (providedTextures.put(location, texture) != null)
             {
                 throw new IllegalStateException("Duplicate texture " + location);
             } else
@@ -250,6 +253,10 @@ public abstract class TextureProvider implements IDataProvider
 
     @Nullable public BufferedImage getTexture(ResourceLocation textureLoc)
     {
+        if (providedTextures.containsKey(textureLoc))
+        {
+            return copyTexture(providedTextures.get(textureLoc));
+        }
         ResourceLocation loc =
                 new ResourceLocation(textureLoc.getNamespace(), "textures/" + textureLoc.getPath() + ".png");
         Preconditions.checkArgument(existingFileHelper.exists(loc, ResourcePackType.CLIENT_RESOURCES),
@@ -263,6 +270,14 @@ public abstract class TextureProvider implements IDataProvider
             LOGGER.error("Couldn't read texture {}", textureLoc, ioException);
         }
         return null;
+    }
+
+    public static BufferedImage copyTexture(BufferedImage texture)
+    {
+        ColorModel colorModel = texture.getColorModel();
+        boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
+        WritableRaster raster = texture.copyData(texture.getRaster().createCompatibleWritableRaster());
+        return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
     }
 
     public void promiseGeneration(ResourceLocation texture)
