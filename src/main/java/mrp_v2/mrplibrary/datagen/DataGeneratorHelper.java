@@ -2,6 +2,7 @@ package mrp_v2.mrplibrary.datagen;
 
 import com.mojang.datafixers.util.Function3;
 import com.mojang.datafixers.util.Function4;
+import mrp_v2.mrplibrary.datagen.providers.*;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.ItemModelProvider;

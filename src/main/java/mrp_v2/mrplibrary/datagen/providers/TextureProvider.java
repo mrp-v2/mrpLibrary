@@ -1,4 +1,4 @@
-package mrp_v2.mrplibrary.datagen;
+package mrp_v2.mrplibrary.datagen.providers;
 
 import com.google.common.base.Preconditions;
 import com.google.common.hash.Hasher;

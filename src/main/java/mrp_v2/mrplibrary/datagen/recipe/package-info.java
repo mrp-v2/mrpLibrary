@@ -1,0 +1,6 @@
+@ParametersAreNonnullByDefault @MethodsReturnNonnullByDefault
+package mrp_v2.mrplibrary.datagen.recipe;
+
+import mcp.MethodsReturnNonnullByDefault;
+
+import javax.annotation.ParametersAreNonnullByDefault;

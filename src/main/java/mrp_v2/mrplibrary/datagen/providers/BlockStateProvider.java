@@ -1,4 +1,4 @@
-package mrp_v2.mrplibrary.datagen;
+package mrp_v2.mrplibrary.datagen.providers;
 
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourcePackType;

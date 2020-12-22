@@ -1,7 +1,8 @@
-package mrp_v2.mrplibrary.datagen;
+package mrp_v2.mrplibrary.datagen.providers;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
+import mrp_v2.mrplibrary.datagen.BlockLootTables;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.loot.*;
 import net.minecraft.util.ResourceLocation;

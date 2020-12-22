@@ -1,39 +1,58 @@
-package mrp_v2.mrplibrary.datagen;
+package mrp_v2.mrplibrary.datagen.recipe;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import mrp_v2.mrplibrary.datagen.DataGenIngredientOverride;
 import mrp_v2.mrplibrary.item.crafting.ConfigurableShapelessRecipe;
 import mrp_v2.mrplibrary.item.crafting.IngredientOverride;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.ICriterionInstance;
 import net.minecraft.data.IFinishedRecipe;
-import net.minecraft.data.ShapelessRecipeBuilder;
 import net.minecraft.item.Item;
 import net.minecraft.item.crafting.IRecipeSerializer;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.tags.ITag;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.ResourceLocation;
-import org.apache.logging.log4j.LogManager;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
-public class ConfigurableShapelessRecipeBuilder extends mrp_v2.mrplibrary.datagen.ShapelessRecipeBuilder
+public class ConfigurableShapelessRecipeBuilder extends ShapelessRecipeBuilder
 {
-    final Set<DataGenIngredientOverride> overrides;
+    protected Set<DataGenIngredientOverride> overrides = new HashSet<>();
 
-    public ConfigurableShapelessRecipeBuilder(IItemProvider resultIn, int countIn)
+    protected ConfigurableShapelessRecipeBuilder(IItemProvider resultIn, int countIn)
     {
         super(resultIn, countIn);
-        this.overrides = new HashSet<>();
+    }
+
+    public ConfigurableShapelessRecipeBuilder(ResourceLocation resultIn, int countIn, @Nullable String resultGroupIn)
+    {
+        super(resultIn, countIn, resultGroupIn);
+    }
+
+    public static ConfigurableShapelessRecipeBuilder configurableShapelessRecipe(ResourceLocation resultIn)
+    {
+        return configurableShapelessRecipe(resultIn, 1);
+    }
+
+    public static ConfigurableShapelessRecipeBuilder configurableShapelessRecipe(ResourceLocation resultIn, int countIn)
+    {
+        return configurableShapelessRecipe(resultIn, countIn, null);
+    }
+
+    public static ConfigurableShapelessRecipeBuilder configurableShapelessRecipe(ResourceLocation resultIn, int countIn,
+            @Nullable String resultGroupIn)
+    {
+        return new ConfigurableShapelessRecipeBuilder(resultIn, countIn, resultGroupIn);
     }
 
     public static ConfigurableShapelessRecipeBuilder configurableShapelessRecipe(IItemProvider resultIn)
     {
-        return new ConfigurableShapelessRecipeBuilder(resultIn, 1);
+        return configurableShapelessRecipe(resultIn, 1);
     }
 
     public static ConfigurableShapelessRecipeBuilder configurableShapelessRecipe(IItemProvider resultIn, int countIn)
@@ -82,27 +101,28 @@ public class ConfigurableShapelessRecipeBuilder extends mrp_v2.mrplibrary.datage
         return this;
     }
 
-    @Override public ConfigurableShapelessRecipeBuilder setGroup(String groupIn)
+    @Override public ConfigurableShapelessRecipeBuilder setGroup(@Nullable String groupIn)
     {
         super.setGroup(groupIn);
         return this;
     }
 
-    @Override public void build(Consumer<IFinishedRecipe> consumerIn, ResourceLocation id)
+    @Override protected IFinishedRecipe buildRecipe(ResourceLocation id)
     {
-        build(consumerIn, id, (a, b, c, d, e, f, g) -> new Result(a, b, c, d, e, f, g, this.overrides));
+        return new FinishedConfigurableShapelessRecipe(id, result, getGroupString(), advancementBuilder,
+                getAdvancementID(id), ingredients, overrides);
     }
 
-    public static class Result extends ShapelessRecipeBuilder.Result
+    public static class FinishedConfigurableShapelessRecipe extends ShapelessRecipeBuilder.FinishedShapelessRecipe
     {
-        private final Set<DataGenIngredientOverride> overrides;
+        protected Set<DataGenIngredientOverride> overrides;
 
-        public Result(ResourceLocation idIn, Item resultIn, int countIn, String groupIn, List<Ingredient> ingredientsIn,
-                Advancement.Builder advancementBuilderIn, ResourceLocation advancementIdIn,
+        public FinishedConfigurableShapelessRecipe(ResourceLocation id, RecipeResult result, String group,
+                Advancement.Builder advancementBuilder, ResourceLocation advancementID, List<Ingredient> ingredients,
                 Set<DataGenIngredientOverride> overrides)
         {
-            super(idIn, resultIn, countIn, groupIn, ingredientsIn, advancementBuilderIn, advancementIdIn);
-            this.overrides = overrides;
+            super(id, result, group, advancementBuilder, advancementID, ingredients);
+            this.ingredients = ingredients;
         }
 
         @Override public void serialize(JsonObject json)
@@ -110,14 +130,14 @@ public class ConfigurableShapelessRecipeBuilder extends mrp_v2.mrplibrary.datage
             super.serialize(json);
             if (overrides.size() < 1)
             {
-                LogManager.getLogger().warn("Recipe " + getID() + " is configurable, but does not have any overrides!");
+                throw new IllegalStateException("Recipe " + getID() + " should not be configurable");
             }
-            JsonArray overridesArray = new JsonArray();
+            JsonArray overridesJson = new JsonArray();
             for (DataGenIngredientOverride override : this.overrides)
             {
-                overridesArray.add(override.serialize());
+                overridesJson.add(override.serialize());
             }
-            json.add(IngredientOverride.OVERRIDES_KEY, overridesArray);
+            json.add(IngredientOverride.OVERRIDES_KEY, overridesJson);
         }
 
         @Override public IRecipeSerializer<?> getSerializer()
