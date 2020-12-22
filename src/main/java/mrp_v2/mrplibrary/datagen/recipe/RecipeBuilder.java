@@ -14,8 +14,8 @@ import java.util.function.Consumer;
 public abstract class RecipeBuilder
 {
     protected RecipeResult result;
-    @Nullable protected String group;
-    protected Advancement.Builder advancementBuilder;
+    @Nullable protected String group = null;
+    protected Advancement.Builder advancementBuilder = Advancement.Builder.builder();
 
     public RecipeBuilder setGroup(@Nullable String groupIn)
     {
