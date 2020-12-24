@@ -2,6 +2,7 @@ package mrp_v2.mrplibrary.datagen.recipe;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import mrp_v2.mrplibrary.util.ObjectHolder;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.ICriterionInstance;
 import net.minecraft.data.IFinishedRecipe;
@@ -89,12 +90,6 @@ public class ShapelessRecipeBuilder extends RecipeBuilder
         return this;
     }
 
-    @Override public ShapelessRecipeBuilder addCriterion(String name, ICriterionInstance criterionIn)
-    {
-        super.addCriterion(name, criterionIn);
-        return this;
-    }
-
     @Override public ShapelessRecipeBuilder setGroup(@Nullable String groupIn)
     {
         super.setGroup(groupIn);
@@ -105,6 +100,12 @@ public class ShapelessRecipeBuilder extends RecipeBuilder
     {
         return new FinishedShapelessRecipe(id, result, getGroupString(), advancementBuilder, getAdvancementID(id),
                 ingredients);
+    }
+
+    @Override public ShapelessRecipeBuilder addCriterion(String name, ICriterionInstance criterionIn)
+    {
+        super.addCriterion(name, criterionIn);
+        return this;
     }
 
     public static class FinishedShapelessRecipe extends FinishedRecipe
@@ -131,7 +132,7 @@ public class ShapelessRecipeBuilder extends RecipeBuilder
 
         @Override public IRecipeSerializer<?> getSerializer()
         {
-            return IRecipeSerializer.CRAFTING_SHAPELESS;
+            return ObjectHolder.CRAFTING_SHAPELESS_SERIALIZER.get();
         }
     }
 }

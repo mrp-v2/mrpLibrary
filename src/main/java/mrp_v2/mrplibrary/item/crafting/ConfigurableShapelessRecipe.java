@@ -3,7 +3,7 @@ package mrp_v2.mrplibrary.item.crafting;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import mrp_v2.mrplibrary.MrpLibrary;
+import mrp_v2.mrplibrary.util.ObjectHolder;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipeSerializer;
@@ -79,19 +79,12 @@ public class ConfigurableShapelessRecipe extends ConfigurableCraftingRecipe
 
     @Override public IRecipeSerializer<?> getSerializer()
     {
-        return Serializer.INSTANCE;
+        return ObjectHolder.CRAFTING_SHAPELESS_CONFIGURABLE_SERIALIZER.get();
     }
 
     public static class Serializer extends ForgeRegistryEntry<IRecipeSerializer<?>>
             implements IRecipeSerializer<ConfigurableShapelessRecipe>
     {
-        public static final Serializer INSTANCE = new Serializer();
-
-        private Serializer()
-        {
-            this.setRegistryName(MrpLibrary.ID, "crafting_shapeless_configurable");
-        }
-
         @Override public ConfigurableShapelessRecipe read(ResourceLocation recipeId, JsonObject json)
         {
             NonNullList<Ingredient> ingredients = readIngredients(JSONUtils.getJsonArray(json, "ingredients"));

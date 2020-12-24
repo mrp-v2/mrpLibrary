@@ -3,8 +3,8 @@ package mrp_v2.mrplibrary.datagen.recipe;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import mrp_v2.mrplibrary.datagen.DataGenIngredientOverride;
-import mrp_v2.mrplibrary.item.crafting.ConfigurableShapelessRecipe;
 import mrp_v2.mrplibrary.item.crafting.IngredientOverride;
+import mrp_v2.mrplibrary.util.ObjectHolder;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.ICriterionInstance;
 import net.minecraft.data.IFinishedRecipe;
@@ -142,7 +142,7 @@ public class ConfigurableShapelessRecipeBuilder extends ShapelessRecipeBuilder
 
         @Override public IRecipeSerializer<?> getSerializer()
         {
-            return ConfigurableShapelessRecipe.Serializer.INSTANCE;
+            return ObjectHolder.CRAFTING_SHAPELESS_CONFIGURABLE_SERIALIZER.get();
         }
     }
 }
