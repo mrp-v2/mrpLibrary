@@ -318,7 +318,7 @@ public abstract class TextureProvider implements IDataProvider
                 .resolve("assets/" + texture.getNamespace() + "/textures/" + texture.getPath() + ".png.mcmeta");
     }
 
-    public void finish(BufferedImage texture, ResourceLocation id, @Nullable TextureMetaBuilder metaBuilder,
+    public void finish(BufferedImage texture, @Nullable TextureMetaBuilder metaBuilder, ResourceLocation id,
             FinishedTextureConsumer consumer)
     {
         consumer.acceptFinishedTexture(texture, metaBuilder, id);
