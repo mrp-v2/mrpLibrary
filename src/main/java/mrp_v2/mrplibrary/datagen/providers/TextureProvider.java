@@ -13,7 +13,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.util.TriConsumer;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 
 public abstract class TextureProvider implements IDataProvider
 {
@@ -222,22 +221,27 @@ public abstract class TextureProvider implements IDataProvider
 
     @Override public void act(DirectoryCache cache)
     {
-        addTextures((texture, location, metaBuilder) ->
+        addTextures(new FinishedTextureConsumer()
         {
-            BufferedImage immutableTexture = copyTexture(texture);
-            if (providedTextures.put(location, immutableTexture) != null)
+            @Override void acceptFinishedTexture(BufferedImage texture, @Nullable TextureMetaBuilder metaBuilder,
+                    ResourceLocation id)
             {
-                throw new IllegalStateException("Duplicate texture " + location);
-            } else if (metaBuilder != null && !(immutableTexture.getTileHeight() / immutableTexture.getTileWidth() > 1))
-            {
-                throw new IllegalStateException("Texture " + location +
-                        " must have a height that is a multiple of its width in order to have metadata");
-            } else
-            {
-                saveTexture(cache, immutableTexture, getTexturePath(location));
-                if (metaBuilder != null)
+                BufferedImage immutableTexture = copyTexture(texture);
+                if (providedTextures.put(id, immutableTexture) != null)
                 {
-                    saveTextureMeta(cache, metaBuilder, getTextureMetaPath(location));
+                    throw new IllegalStateException("Duplicate texture " + id);
+                } else if (metaBuilder != null &&
+                        !(immutableTexture.getTileHeight() / immutableTexture.getTileWidth() > 1))
+                {
+                    throw new IllegalStateException("Texture " + id +
+                            " must have a height that is a multiple of its width in order to have metadata");
+                } else
+                {
+                    saveTexture(cache, immutableTexture, getTexturePath(id));
+                    if (metaBuilder != null)
+                    {
+                        saveTextureMeta(cache, metaBuilder, getTextureMetaPath(id));
+                    }
                 }
             }
         });
@@ -248,12 +252,7 @@ public abstract class TextureProvider implements IDataProvider
         return "Textures: " + modId;
     }
 
-    protected abstract void addTextures(BiConsumer<BufferedImage, ResourceLocation> consumer);
-
-    protected void addTextures(TriConsumer<BufferedImage, ResourceLocation, TextureMetaBuilder> consumer)
-    {
-        addTextures((texture, textureLoc) -> consumer.accept(texture, textureLoc, null));
-    }
+    protected abstract void addTextures(FinishedTextureConsumer consumer);
 
     protected void saveTextureMeta(DirectoryCache cache, TextureMetaBuilder metaBuilder, Path path)
     {
@@ -277,6 +276,12 @@ public abstract class TextureProvider implements IDataProvider
             }
             cache.recordHash(path, hash);
         }
+    }
+
+    protected Path getTexturePath(ResourceLocation texture)
+    {
+        return this.generator.getOutputFolder()
+                .resolve("assets/" + texture.getNamespace() + "/textures/" + texture.getPath() + ".png");
     }
 
     protected void saveTexture(DirectoryCache cache, BufferedImage texture, Path path)
@@ -307,21 +312,24 @@ public abstract class TextureProvider implements IDataProvider
         cache.recordHash(path, hash);
     }
 
-    protected Path getTexturePath(ResourceLocation texture)
-    {
-        return this.generator.getOutputFolder()
-                .resolve("assets/" + texture.getNamespace() + "/textures/" + texture.getPath() + ".png");
-    }
-
     protected Path getTextureMetaPath(ResourceLocation texture)
     {
         return this.generator.getOutputFolder()
                 .resolve("assets/" + texture.getNamespace() + "/textures/" + texture.getPath() + ".png.mcmeta");
     }
 
-    public void finish(BufferedImage texture, ResourceLocation id, BiConsumer<BufferedImage, ResourceLocation> consumer)
+    public void finish(BufferedImage texture, ResourceLocation id, @Nullable TextureMetaBuilder metaBuilder,
+            FinishedTextureConsumer consumer)
     {
-        consumer.accept(texture, id);
+        consumer.acceptFinishedTexture(texture, metaBuilder, id);
+    }
+
+    public static class FinishedTextureConsumer
+    {
+        void acceptFinishedTexture(BufferedImage texture, @Nullable TextureMetaBuilder metaBuilder, ResourceLocation id)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     @Nullable public TextureMetaBuilder getTextureMeta(ResourceLocation textureLoc)
