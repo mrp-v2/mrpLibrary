@@ -274,8 +274,8 @@ public abstract class TextureProvider implements IDataProvider
             {
                 LOGGER.error("Couldn't save metadata for texture {}", path, ioException);
             }
-            cache.recordHash(path, hash);
         }
+        cache.recordHash(path, hash);
     }
 
     protected Path getTexturePath(ResourceLocation texture)
