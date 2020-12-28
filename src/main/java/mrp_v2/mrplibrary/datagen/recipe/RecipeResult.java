@@ -1,19 +1,47 @@
 package mrp_v2.mrplibrary.datagen.recipe;
 
+import mrp_v2.mrplibrary.util.Possible;
+import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
+
 import javax.annotation.Nullable;
 
-public abstract class RecipeResult
+public class RecipeResult
 {
     private int count;
+    private Possible<net.minecraft.item.Item> item;
 
     public RecipeResult(int count)
     {
         this.count = count;
     }
 
-    public abstract net.minecraft.util.ResourceLocation getItemID();
-    public abstract String getGroupPath();
-    public abstract boolean hasGroup();
+    public RecipeResult(int count, Item item)
+    {
+        this(count);
+        this.item = Possible.of(item);
+    }
+
+    public RecipeResult(int count, ResourceLocation loc, String group)
+    {
+        this(count);
+        this.item = new ItemDoesNotExist(loc, group);
+    }
+
+    public net.minecraft.util.ResourceLocation getItemID()
+    {
+        return item.getId();
+    }
+
+    public String getGroupPath()
+    {
+        return item.exists() ? item.get().getGroup().getPath() : ((ItemDoesNotExist) item).groupPath;
+    }
+
+    public boolean hasGroup()
+    {
+        return item.exists() || (item instanceof ItemDoesNotExist && ((ItemDoesNotExist) item).groupPath != null);
+    }
 
     public int getCount()
     {
@@ -25,78 +53,24 @@ public abstract class RecipeResult
         this.count = count;
     }
 
-    public static class Item extends RecipeResult
+    public void setItem(net.minecraft.item.Item item)
     {
-        private net.minecraft.item.Item item;
-
-        public Item(int count, net.minecraft.item.Item item)
-        {
-            super(count);
-            this.item = item;
-        }
-
-        @Override public net.minecraft.util.ResourceLocation getItemID()
-        {
-            return item.getRegistryName();
-        }
-
-        @Override public String getGroupPath()
-        {
-            return item.getGroup().getPath();
-        }
-
-        @Override public boolean hasGroup()
-        {
-            return item.getGroup() != null;
-        }
-
-        public void setItem(net.minecraft.item.Item item)
-        {
-            this.item = item;
-        }
+        this.item = Possible.of(item);
     }
 
-    public static class ResourceLocation extends RecipeResult
+    public void setItem(net.minecraft.util.ResourceLocation loc, @Nullable String groupPath)
     {
-        private net.minecraft.util.ResourceLocation resourceLocation;
-        @Nullable private String groupPath;
+        item = new ItemDoesNotExist(loc, groupPath);
+    }
 
-        public ResourceLocation(int count, net.minecraft.util.ResourceLocation resourceLocation)
-        {
-            this(count, resourceLocation, null);
-        }
+    public static class ItemDoesNotExist extends Possible.DoesNotExist<Item>
+    {
+        @Nullable private final String groupPath;
 
-        public ResourceLocation(int count, net.minecraft.util.ResourceLocation resourceLocation,
-                @Nullable String groupPath)
+        public ItemDoesNotExist(net.minecraft.util.ResourceLocation resourceLocation, @Nullable String groupPath)
         {
-            super(count);
-            this.resourceLocation = resourceLocation;
+            super(resourceLocation);
             this.groupPath = groupPath;
-        }
-
-        @Override public net.minecraft.util.ResourceLocation getItemID()
-        {
-            return resourceLocation;
-        }
-
-        @Override public String getGroupPath()
-        {
-            return groupPath;
-        }
-
-        public void setGroupPath(@Nullable String groupPath)
-        {
-            this.groupPath = groupPath;
-        }
-
-        @Override public boolean hasGroup()
-        {
-            return groupPath != null;
-        }
-
-        public void setItemID(net.minecraft.util.ResourceLocation resourceLocation)
-        {
-            this.resourceLocation = resourceLocation;
         }
     }
 }

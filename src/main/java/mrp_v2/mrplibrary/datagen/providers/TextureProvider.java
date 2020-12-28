@@ -13,7 +13,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
@@ -324,12 +323,10 @@ public abstract class TextureProvider implements IDataProvider
         consumer.acceptFinishedTexture(texture, metaBuilder, id);
     }
 
-    public static class FinishedTextureConsumer
+    public abstract static class FinishedTextureConsumer
     {
-        void acceptFinishedTexture(BufferedImage texture, @Nullable TextureMetaBuilder metaBuilder, ResourceLocation id)
-        {
-            throw new NotImplementedException();
-        }
+        abstract void acceptFinishedTexture(BufferedImage texture, @Nullable TextureMetaBuilder metaBuilder,
+                ResourceLocation id);
     }
 
     @Nullable public TextureMetaBuilder getTextureMeta(ResourceLocation textureLoc)

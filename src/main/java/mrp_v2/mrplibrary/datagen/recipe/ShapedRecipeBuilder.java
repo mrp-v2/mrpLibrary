@@ -26,12 +26,12 @@ public class ShapedRecipeBuilder extends RecipeBuilder
 
     protected ShapedRecipeBuilder(IItemProvider resultIn, int countIn)
     {
-        this.result = new RecipeResult.Item(countIn, resultIn.asItem());
+        this.result = new RecipeResult(countIn, resultIn.asItem());
     }
 
     protected ShapedRecipeBuilder(ResourceLocation resultIn, int countIn, @Nullable String resultGroupIn)
     {
-        this.result = new RecipeResult.ResourceLocation(countIn, resultIn, resultGroupIn);
+        this.result = new RecipeResult(countIn, resultIn, resultGroupIn);
     }
 
     public static ShapedRecipeBuilder shapedRecipe(IItemProvider resultIn)
