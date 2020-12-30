@@ -1,12 +1,12 @@
 package mrp_v2.mrplibrary.datagen;
 
-import com.mojang.datafixers.util.Function3;
-import com.mojang.datafixers.util.Function4;
 import mrp_v2.mrplibrary.datagen.providers.*;
+import mrp_v2.mrplibrary.util.Function3;
+import mrp_v2.mrplibrary.util.Function4;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
+import net.minecraftforge.client.model.generators.ExistingFileHelper;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
-import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 
@@ -24,8 +24,7 @@ public class DataGeneratorHelper
         this.dataGenerator = event.getGenerator();
         this.modId = modId;
         this.existingFileHelper = event.getExistingFileHelper();
-        this.blockTagsProvider =
-                new net.minecraft.data.BlockTagsProvider(this.dataGenerator, this.modId, this.existingFileHelper);
+        this.blockTagsProvider = new net.minecraft.data.BlockTagsProvider(this.dataGenerator);
     }
 
     public void addTextureProvider(

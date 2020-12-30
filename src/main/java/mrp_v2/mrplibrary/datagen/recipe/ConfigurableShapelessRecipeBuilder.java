@@ -11,7 +11,7 @@ import net.minecraft.data.IFinishedRecipe;
 import net.minecraft.item.Item;
 import net.minecraft.item.crafting.IRecipeSerializer;
 import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.tags.ITag;
+import net.minecraft.tags.Tag;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.ResourceLocation;
 
@@ -65,7 +65,7 @@ public class ConfigurableShapelessRecipeBuilder extends ShapelessRecipeBuilder
         return new DataGenIngredientOverride.Builder<>(this, this.overrides, condition);
     }
 
-    @Override public ConfigurableShapelessRecipeBuilder addIngredient(ITag<Item> tagIn)
+    @Override public ConfigurableShapelessRecipeBuilder addIngredient(Tag<Item> tagIn)
     {
         super.addIngredient(tagIn);
         return this;

@@ -11,7 +11,7 @@ import net.minecraft.data.IFinishedRecipe;
 import net.minecraft.item.Item;
 import net.minecraft.item.crafting.IRecipeSerializer;
 import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.tags.ITag;
+import net.minecraft.tags.Tag;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.ResourceLocation;
 
@@ -66,7 +66,7 @@ public class ConfigurableShapedRecipeBuilder extends ShapedRecipeBuilder
         return new DataGenIngredientOverride.Builder<>(this, this.overrides, condition);
     }
 
-    @Override public ConfigurableShapedRecipeBuilder key(Character symbol, ITag<Item> tagIn)
+    @Override public ConfigurableShapedRecipeBuilder key(Character symbol, Tag<Item> tagIn)
     {
         super.key(symbol, tagIn);
         return this;

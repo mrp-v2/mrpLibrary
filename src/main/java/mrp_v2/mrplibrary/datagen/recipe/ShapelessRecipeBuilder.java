@@ -9,7 +9,7 @@ import net.minecraft.data.IFinishedRecipe;
 import net.minecraft.item.Item;
 import net.minecraft.item.crafting.IRecipeSerializer;
 import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.tags.ITag;
+import net.minecraft.tags.Tag;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.ResourceLocation;
 
@@ -57,7 +57,7 @@ public class ShapelessRecipeBuilder extends RecipeBuilder
         return new ShapelessRecipeBuilder(resultIn, countIn, resultGroupIn);
     }
 
-    public ShapelessRecipeBuilder addIngredient(ITag<Item> tagIn)
+    public ShapelessRecipeBuilder addIngredient(Tag<Item> tagIn)
     {
         return addIngredient(Ingredient.fromTag(tagIn));
     }

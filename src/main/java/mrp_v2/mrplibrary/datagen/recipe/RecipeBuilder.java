@@ -59,7 +59,7 @@ public abstract class RecipeBuilder
     protected void buildAdvancement(ResourceLocation id)
     {
         advancementBuilder.withParentId(new ResourceLocation("recipes/root"))
-                .withCriterion("has_the_recipe", RecipeUnlockedTrigger.create(id))
+                .withCriterion("has_the_recipe", new RecipeUnlockedTrigger.Instance(id))
                 .withRewards(AdvancementRewards.Builder.recipe(id)).withRequirementsStrategy(IRequirementsStrategy.OR);
     }
 

@@ -10,7 +10,7 @@ import net.minecraft.resources.IResource;
 import net.minecraft.resources.ResourcePackType;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.client.model.generators.ExistingFileHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -353,13 +353,13 @@ public abstract class TextureProvider implements IDataProvider
         {
             return TextureMetaBuilder.copy(providedTextureMetas.get(textureLoc));
         }
-        ResourceLocation loc =
-                new ResourceLocation(textureLoc.getNamespace(), "textures/" + textureLoc.getPath() + ".png.mcmeta");
-        Preconditions.checkArgument(existingFileHelper.exists(loc, ResourcePackType.CLIENT_RESOURCES),
-                "Texture metadata %s does not exist in any known resource pack", loc);
+        Preconditions.checkArgument(
+                existingFileHelper.exists(textureLoc, ResourcePackType.CLIENT_RESOURCES, ".png.mcmeta", "textures"),
+                "Texture metadata %s does not exist in any known resource pack", textureLoc);
         try
         {
-            IResource resource = existingFileHelper.getResource(loc, ResourcePackType.CLIENT_RESOURCES);
+            IResource resource = existingFileHelper
+                    .getResource(textureLoc, ResourcePackType.CLIENT_RESOURCES, ".png.mcmeta", "textures");
             return TextureMetaBuilder.fromInputStream(resource.getInputStream());
         } catch (IOException ioException)
         {
@@ -374,13 +374,13 @@ public abstract class TextureProvider implements IDataProvider
         {
             return copyTexture(providedTextures.get(textureLoc));
         }
-        ResourceLocation loc =
-                new ResourceLocation(textureLoc.getNamespace(), "textures/" + textureLoc.getPath() + ".png");
-        Preconditions.checkArgument(existingFileHelper.exists(loc, ResourcePackType.CLIENT_RESOURCES),
-                "Texture %s does not exist in any known resource pack", loc);
+        Preconditions.checkArgument(
+                existingFileHelper.exists(textureLoc, ResourcePackType.CLIENT_RESOURCES, "textures", ".png"),
+                "Texture %s does not exist in any known resource pack", textureLoc);
         try
         {
-            IResource resource = existingFileHelper.getResource(loc, ResourcePackType.CLIENT_RESOURCES);
+            IResource resource =
+                    existingFileHelper.getResource(textureLoc, ResourcePackType.CLIENT_RESOURCES, "textures", ".png");
             return ImageIO.read(resource.getInputStream());
         } catch (IOException ioException)
         {
@@ -395,11 +395,6 @@ public abstract class TextureProvider implements IDataProvider
         boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
         WritableRaster raster = texture.copyData(texture.getRaster().createCompatibleWritableRaster());
         return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
-    }
-
-    public void promiseGeneration(ResourceLocation texture)
-    {
-        this.existingFileHelper.trackGenerated(texture, ResourcePackType.CLIENT_RESOURCES, ".png", "textures");
     }
 
     public static class TextureMetaBuilder

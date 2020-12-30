@@ -1,9 +1,7 @@
 package mrp_v2.mrplibrary.datagen.providers;
 
 import net.minecraft.data.DataGenerator;
-import net.minecraft.resources.ResourcePackType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.client.model.generators.ExistingFileHelper;
 
 public abstract class BlockStateProvider extends net.minecraftforge.client.model.generators.BlockStateProvider
 {
@@ -13,10 +11,5 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
     {
         super(gen, modid, exFileHelper);
         this.existingFileHelper = exFileHelper;
-    }
-
-    public void promiseGeneration(ResourceLocation model)
-    {
-        existingFileHelper.trackGenerated(model, ResourcePackType.CLIENT_RESOURCES, ".json", "models");
     }
 }
