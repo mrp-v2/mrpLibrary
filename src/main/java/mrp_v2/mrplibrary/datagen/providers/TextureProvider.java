@@ -375,12 +375,12 @@ public abstract class TextureProvider implements IDataProvider
             return copyTexture(providedTextures.get(textureLoc));
         }
         Preconditions.checkArgument(
-                existingFileHelper.exists(textureLoc, ResourcePackType.CLIENT_RESOURCES, "textures", ".png"),
+                existingFileHelper.exists(textureLoc, ResourcePackType.CLIENT_RESOURCES, ".png", "textures"),
                 "Texture %s does not exist in any known resource pack", textureLoc);
         try
         {
             IResource resource =
-                    existingFileHelper.getResource(textureLoc, ResourcePackType.CLIENT_RESOURCES, "textures", ".png");
+                    existingFileHelper.getResource(textureLoc, ResourcePackType.CLIENT_RESOURCES, ".png", "textures");
             return ImageIO.read(resource.getInputStream());
         } catch (IOException ioException)
         {
