@@ -40,7 +40,8 @@ public class RecipeResult
 
     public boolean hasGroup()
     {
-        return item.exists() || (item instanceof ItemDoesNotExist && ((ItemDoesNotExist) item).groupPath != null);
+        return item.exists() && item.get().getGroup() != null ||
+                (item instanceof ItemDoesNotExist && ((ItemDoesNotExist) item).groupPath != null);
     }
 
     public int getCount()
