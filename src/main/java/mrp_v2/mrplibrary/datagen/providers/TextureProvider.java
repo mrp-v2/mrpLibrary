@@ -168,6 +168,7 @@ public abstract class TextureProvider implements IDataProvider
             for (int y = startY; y < startY + h; y++)
             {
                 Color color = new Color(texture.getRGB(x, y), true);
+                final int alpha = color.getAlpha();
                 int intensity =
                         clampToByte((color.getRed() * 19595 + color.getGreen() * 38470 + color.getBlue() * 7471) >> 16);
                 int r = adjustSaturation(color.getRed(), intensity, saturationFactor), g =
@@ -176,13 +177,12 @@ public abstract class TextureProvider implements IDataProvider
                 float[] hsb = Color.RGBtoHSB(r, g, b, null);
                 hsb[0] += hueShift;
                 int rgb = Color.HSBtoRGB(hsb[0], hsb[1], hsb[2]);
-                int argb = (color.getAlpha() << 24) | rgb;
-                color = new Color(argb, true);
+                color = new Color(rgb);
                 r = adjustBrightness(color.getRed(), cWeight, weightedB);
                 g = adjustBrightness(color.getGreen(), cWeight, weightedB);
                 b = adjustBrightness(color.getBlue(), cWeight, weightedB);
-                color = new Color(r, g, b, color.getAlpha());
-                texture.setRGB(x, y, color.getRGB() | (color.getAlpha() << 24));
+                color = new Color(r, g, b, alpha);
+                texture.setRGB(x, y, color.getRGB());
             }
         }
     }
