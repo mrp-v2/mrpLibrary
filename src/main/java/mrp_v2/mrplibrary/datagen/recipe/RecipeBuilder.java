@@ -100,7 +100,7 @@ public abstract class RecipeBuilder
             return readFunc.get();
         } catch (JsonSyntaxException e)
         {
-            if (e.getMessage().startsWith("Unknown Item '"))
+            if (e.getMessage().startsWith("Unknown item '"))
             {
                 String itemID = e.getMessage().split("'")[1];
                 LOGGER.info("Ignoring recipe " + recipeId.toString() + " because item '" + itemID + "' does not exist");
