@@ -4,7 +4,6 @@
 # gradle
 /build/
 /.gradle/
-/gradlew.bat
 
 # other
 /run/

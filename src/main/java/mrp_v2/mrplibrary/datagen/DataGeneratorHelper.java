@@ -4,13 +4,18 @@ import com.mojang.datafixers.util.Function3;
 import com.mojang.datafixers.util.Function4;
 import mrp_v2.mrplibrary.datagen.providers.*;
 import net.minecraft.data.DataGenerator;
+import net.minecraft.loot.LootTable;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class DataGeneratorHelper
 {
@@ -39,6 +44,14 @@ public class DataGeneratorHelper
             BiFunction<DataGenerator, String, ? extends ParticleProvider> particleProviderConstructor)
     {
         this.dataGenerator.addProvider(particleProviderConstructor.apply(this.dataGenerator, this.modId));
+    }
+
+    public void addLootTableProvider(
+            Function3<DataGenerator, Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, String, ? extends LootTableProvider> lootTableProviderConstructor,
+            Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>> lootTablesProvider)
+    {
+        this.dataGenerator
+                .addProvider(lootTableProviderConstructor.apply(this.dataGenerator, lootTablesProvider, this.modId));
     }
 
     public void addLootTables(BlockLootTables blockLootTables)
