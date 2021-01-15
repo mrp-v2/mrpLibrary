@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import mrp_v2.mrplibrary.util.IModLocProvider;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DirectoryCache;
 import net.minecraft.data.IDataProvider;
@@ -20,12 +21,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public abstract class ParticleProvider implements IDataProvider
+public abstract class ParticleProvider implements IDataProvider, IModLocProvider
 {
-    private static final Logger LOGGER = LogManager.getLogger();
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private final DataGenerator generator;
+    private static final Logger LOGGER = LogManager.getLogger();
     public final String modId;
+    private final DataGenerator generator;
 
     protected ParticleProvider(DataGenerator generator, String modId)
     {
@@ -38,9 +39,14 @@ public abstract class ParticleProvider implements IDataProvider
         return new ParticleBuilder(location);
     }
 
+    @Override public String getModId()
+    {
+        return modId;
+    }
+
     @Override public void act(DirectoryCache cache) throws IOException
     {
-        Path path = this.generator.getOutputFolder();
+        Path path = generator.getOutputFolder();
         Set<ResourceLocation> locationSet = new HashSet<>();
         registerParticles((particleBuilder ->
         {

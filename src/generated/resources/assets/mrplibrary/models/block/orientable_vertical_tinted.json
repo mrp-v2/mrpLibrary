@@ -1,0 +1,12 @@
+{
+  "parent": "mrplibrary:block/cube_tinted",
+  "textures": {
+    "particle": "#side",
+    "down": "#side",
+    "up": "#front",
+    "north": "#side",
+    "south": "#side",
+    "west": "#side",
+    "east": "#side"
+  }
+}

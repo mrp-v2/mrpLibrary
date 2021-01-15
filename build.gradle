@@ -9,6 +9,9 @@ buildscript {
         maven {
             url = 'https://files.minecraftforge.net/maven'
         }
+        maven {
+            url = 'https://plugins.gradle.org/m2/'
+        }
         jcenter()
         mavenCentral()
         maven {
@@ -18,11 +21,12 @@ buildscript {
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
         classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+        classpath group: 'gradle.plugin.com.matthewprenger', name: 'CurseGradle', version: '1.4.0'
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
-// Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'maven-publish'
+apply plugin: 'com.matthewprenger.cursegradle'
 String mcVersion = version.split('-')[0]
 if (forgeVersion == 'latest' || forgeVersion == 'recommended')
 {
@@ -39,7 +43,6 @@ if (minimumForgeVersion == 'none')
 {
     minimumForgeVersion = forgeMajor
 }
-String mcNextVersion = '1.' + ((mcVersion.split('\\.')[1] as int) + 1)
 String homepageURL = "https://www.curseforge.com/minecraft/mc-mods/${modDisplayName.replace(' ', '-').toLowerCase()}"
 String issuesURL = "${homepageURL}/issues"
 String updateURL = "https://raw.githubusercontent.com/mrp-v2/${capitalizedModId}/master/update.json"
@@ -120,7 +123,7 @@ minecraft {
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             args '--mod', modId, '--all', '--output', file('src/generated/resources/'), '--existing',
-                    sourceSets.main.output.resourcesDir
+                    sourceSets.main.output.resourcesDir, '--existing', file('../mrpLibrary/build/resources/main')
             mods {
                 mod {
                     source sourceSets.main
@@ -147,13 +150,14 @@ repositories {
             }
         }
     }
+    mavenLocal()
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${mcVersion}-${forgeVersion}"
     if (mrpLibAPI != 'none' && mrpLibPatch != 'none')
     {
-        compile fg.deobf("mrp_v2.mrplibrary:mrplibrary:${mcVersion}-${mrpLibAPI}${mrpLibPatch}-forge")
+        compile fg.deobf("mrp_v2.mrplibrary:mrplibrary:${mrpLibAPI}${mrpLibPatch}")
     }
 }
 
@@ -178,12 +182,16 @@ jar {
 jar.finalizedBy('reobfJar')
 
 processResources {
+    String tempMCVersion = mcVersion
+    if (mcVersion == "1.16.5")
+    {
+        tempMCVersion = "1.16.4"
+    }
     inputs.property 'version', project.version
     inputs.property 'modId', modId
     inputs.property 'forgeMajor', forgeMajor
     inputs.property 'minimumForgeVersion', minimumForgeVersion
-    inputs.property 'mcVersion', mcVersion
-    inputs.property 'mcNextVersion', mcNextVersion
+    inputs.property 'mcVersion', tempMCVersion
     inputs.property 'homepageURL', homepageURL
     inputs.property 'modDisplayName', modDisplayName
     inputs.property 'capitalizedModId', capitalizedModId
@@ -203,7 +211,7 @@ processResources {
         include files
         Map<String, ?> properties = new HashMap<>()
         properties.putAll('version': project.version, 'modId': modId, 'forgeMajor': forgeMajor,
-                'minimumForgeVersion': minimumForgeVersion, 'mcVersion': mcVersion, 'mcNextVersion': mcNextVersion,
+                'minimumForgeVersion': minimumForgeVersion, 'mcVersion': tempMCVersion,
                 'homepageURL': homepageURL, 'modDisplayName': modDisplayName, 'capitalizedModId': capitalizedModId,
                 'modDescription': modDescription, 'author': author, 'updateURL': updateURL, 'issuesURL': issuesURL)
         if (mrpLibVersion != 'none')
@@ -215,6 +223,11 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude files
     }
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier = 'sources'
 }
 
 publishing {
@@ -232,6 +245,7 @@ publishing {
         gpr(MavenPublication) {
             artifactId modId
             artifact jar
+            artifact sourcesJar
         }
     }
 }
@@ -273,5 +287,61 @@ if (usesMixins)
 
     mixin {
         add sourceSets.main, "${modId}.refmap.json"
+    }
+}
+
+curseforge {
+    apiKey = System.getenv('CURSEFORGE_API_KEY')
+    apiKey = apiKey == null ? new JsonSlurper().parse(new File('../secrets.json')).get('curseforge-api-token') : apiKey
+    project {
+        id = projectId
+        StringBuilder out = new StringBuilder(), error = new StringBuilder()
+        Process thisVersionProcess = ['git', 'describe', '--tags', '--abbrev=0'].execute()
+        thisVersionProcess.consumeProcessOutput(out, error)
+        thisVersionProcess.waitFor()
+        String thisVersion = out.toString().trim()
+        if (thisVersion.isEmpty())
+        {
+            thisVersion = error.toString().trim()
+        }
+        out = new StringBuilder()
+        error = new StringBuilder()
+        println('This Version: ' + thisVersion)
+        Process previousVersionProcess = ['git', 'describe', '--tags', '--abbrev=0', "${thisVersion}^"].execute()
+        previousVersionProcess.consumeProcessOutput(out, error)
+        previousVersionProcess.waitFor()
+        String previousVersion = out.toString().trim()
+        if (previousVersion.isEmpty())
+        {
+            previousVersion = error.toString().trim()
+        }
+        out = new StringBuilder()
+        error = new StringBuilder()
+        println('Previous Version: ' + previousVersion)
+        Process gitLogProcess = ['git', 'log', '--pretty=format:"%s"', "${previousVersion}..${thisVersion}"].execute()
+        gitLogProcess.consumeProcessOutput(out, error)
+        gitLogProcess.waitFor()
+        String changelogStr = out.toString().trim()
+        if (changelogStr.isEmpty())
+        {
+            changelogStr = error.toString().trim()
+        }
+        println('Changelog: ' + changelogStr)
+        changelog = changelogStr
+        releaseType = 'release'
+        mainArtifact jar
+        addGameVersion mcVersion
+        relations {
+            if (mrpLibVersion != 'none')
+            {
+                requiredDependency 'mrp-library'
+            }
+        }
+    }
+    options {
+        debug = true
+        javaVersionAutoDetect = false
+        javaIntegration = false
+        forgeGradleIntegration = false
     }
 }

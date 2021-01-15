@@ -3,6 +3,7 @@ package mrp_v2.mrplibrary.datagen.providers;
 import com.google.common.base.Preconditions;
 import com.google.common.hash.Hasher;
 import com.google.gson.*;
+import mrp_v2.mrplibrary.util.IModLocProvider;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DirectoryCache;
 import net.minecraft.data.IDataProvider;
@@ -29,7 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class TextureProvider implements IDataProvider
+public abstract class TextureProvider implements IDataProvider, IModLocProvider
 {
     private static final Logger LOGGER = LogManager.getLogger();
     public static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -39,6 +40,15 @@ public abstract class TextureProvider implements IDataProvider
     protected final DataGenerator generator;
     protected final Map<ResourceLocation, BufferedImage> providedTextures;
     protected final Map<ResourceLocation, TextureMetaBuilder> providedTextureMetas;
+
+    public TextureProvider(DataGenerator generator, ExistingFileHelper existingFileHelper, String modId)
+    {
+        this.generator = generator;
+        this.existingFileHelper = existingFileHelper;
+        this.modId = modId;
+        this.providedTextures = new HashMap<>();
+        this.providedTextureMetas = new HashMap<>();
+    }
 
     public static int color(int r, int g, int b)
     {
@@ -57,24 +67,15 @@ public abstract class TextureProvider implements IDataProvider
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
-    public TextureProvider(DataGenerator generator, ExistingFileHelper existingFileHelper, String modId)
+    public static void adjustLevels(BufferedImage texture, double levelAdjustment)
     {
-        this.generator = generator;
-        this.existingFileHelper = existingFileHelper;
-        this.modId = modId;
-        this.providedTextures = new HashMap<>();
-        this.providedTextureMetas = new HashMap<>();
+        adjustLevels(texture, texture.getMinTileX(), texture.getMinTileY(), texture.getTileWidth(),
+                texture.getTileHeight(), levelAdjustment);
     }
 
     public static void adjustLevels(BufferedImage texture, int startX, int startY, int w, int h, double levelAdjustment)
     {
         adjustLevels(texture, startX, startY, w, h, levelAdjustment, 0, 255, 0, 255);
-    }
-
-    public static void adjustLevels(BufferedImage texture, double levelAdjustment)
-    {
-        adjustLevels(texture, texture.getMinTileX(), texture.getMinTileY(), texture.getTileWidth(),
-                texture.getTileHeight(), levelAdjustment);
     }
 
     public static void adjustLevels(BufferedImage texture, int startX, int startY, int w, int h, double levelAdjustment,
@@ -117,6 +118,11 @@ public abstract class TextureProvider implements IDataProvider
         }
     }
 
+    public static int clampToByte(double value)
+    {
+        return (int) Math.max(0, Math.min(255, value));
+    }
+
     protected static int adjustLevel(int i, double levelAdjustment)
     {
         return adjustLevel(i, levelAdjustment, 0, 255, 0, 255);
@@ -127,6 +133,12 @@ public abstract class TextureProvider implements IDataProvider
     {
         adjustLevels(texture, texture.getMinTileX(), texture.getMinTileY(), texture.getTileWidth(),
                 texture.getTileHeight(), levelAdjustment, inLow, inHigh, outLow, outHigh);
+    }
+
+    public static void makeGrayscale(BufferedImage texture)
+    {
+        makeGrayscale(texture, texture.getMinTileX(), texture.getMinTileY(), texture.getTileWidth(),
+                texture.getTileHeight());
     }
 
     public static void makeGrayscale(BufferedImage texture, int startX, int startY, int w, int h)
@@ -144,15 +156,10 @@ public abstract class TextureProvider implements IDataProvider
         }
     }
 
-    public static int clampToByte(double value)
+    public static void adjustHSB(BufferedImage texture, int hueChange, int saturation, int brightnessChange)
     {
-        return (int) Math.max(0, Math.min(255, value));
-    }
-
-    public static void makeGrayscale(BufferedImage texture)
-    {
-        makeGrayscale(texture, texture.getMinTileX(), texture.getMinTileY(), texture.getTileWidth(),
-                texture.getTileHeight());
+        adjustHSB(texture, texture.getMinTileX(), texture.getMinTileY(), texture.getTileWidth(),
+                texture.getTileHeight(), hueChange, saturation, brightnessChange);
     }
 
     public static void adjustHSB(BufferedImage texture, int startX, int startY, int w, int h, int hueChange,
@@ -192,15 +199,14 @@ public abstract class TextureProvider implements IDataProvider
         return Math.max(0, Math.min(255, value));
     }
 
-    public static void adjustHSB(BufferedImage texture, int hueChange, int saturation, int brightnessChange)
-    {
-        adjustHSB(texture, texture.getMinTileX(), texture.getMinTileY(), texture.getTileWidth(),
-                texture.getTileHeight(), hueChange, saturation, brightnessChange);
-    }
-
     protected static int adjustSaturation(int i, int intensity, int saturationFactor)
     {
         return clampToByte(intensity * 1024 + (i - intensity) * saturationFactor >> 10);
+    }
+
+    protected static int adjustBrightness(int i, int iWeight, int weightedB)
+    {
+        return (i * iWeight + weightedB) / 256;
     }
 
     public static int[] color(int color, int length)
@@ -213,18 +219,18 @@ public abstract class TextureProvider implements IDataProvider
         return array;
     }
 
-    protected static int adjustBrightness(int i, int iWeight, int weightedB)
+    @Override public String getModId()
     {
-        return (i * iWeight + weightedB) / 256;
+        return modId;
     }
 
     @Override public void act(DirectoryCache cache)
     {
         addTextures(new FinishedTextureConsumer()
         {
-            @Override void acceptFinishedTexture(BufferedImage texture, ResourceLocation id)
+            @Override void accept(Texture texture, ResourceLocation id)
             {
-                BufferedImage immutableTexture = copyTexture(texture);
+                BufferedImage immutableTexture = copyTexture(texture.texture);
                 if (providedTextures.put(id, immutableTexture) != null)
                 {
                     throw new IllegalStateException("Duplicate texture " + id);
@@ -232,17 +238,16 @@ public abstract class TextureProvider implements IDataProvider
                 {
                     saveTexture(cache, immutableTexture, getTexturePath(id));
                 }
-            }
-
-            @Override void acceptFinishedTextureMetadata(TextureMetaBuilder metaBuilder, ResourceLocation id)
-            {
-                TextureMetaBuilder immutableMetaData = TextureMetaBuilder.copy(metaBuilder);
-                if (providedTextureMetas.put(id, immutableMetaData) != null)
+                if (texture.textureMetaBuilder != null)
                 {
-                    throw new IllegalStateException("Duplicate texture metadata " + id);
-                } else
-                {
-                    saveTextureMeta(cache, immutableMetaData, getTextureMetaPath(id));
+                    TextureMetaBuilder immutableMetaData = texture.textureMetaBuilder.copy();
+                    if (providedTextureMetas.put(id, immutableMetaData) != null)
+                    {
+                        throw new IllegalStateException("Duplicate texture metadata " + id);
+                    } else
+                    {
+                        saveTextureMeta(cache, immutableMetaData, getTextureMetaPath(id));
+                    }
                 }
             }
         });
@@ -313,45 +318,35 @@ public abstract class TextureProvider implements IDataProvider
         cache.recordHash(path, hash);
     }
 
+    protected static BufferedImage copyTexture(BufferedImage texture)
+    {
+        ColorModel colorModel = texture.getColorModel();
+        boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
+        WritableRaster raster = texture.copyData(texture.getRaster().createCompatibleWritableRaster());
+        return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
+    }
+
     protected Path getTextureMetaPath(ResourceLocation texture)
     {
         return this.generator.getOutputFolder()
                 .resolve("assets/" + texture.getNamespace() + "/textures/" + texture.getPath() + ".png.mcmeta");
     }
 
-    public void finish(BufferedImage texture, ResourceLocation id, FinishedTextureConsumer consumer)
+    public void finish(Texture texture, ResourceLocation id, FinishedTextureConsumer consumer)
     {
-        consumer.acceptFinishedTexture(texture, id);
+        consumer.accept(texture, id);
     }
 
-    public void finish(TextureMetaBuilder metaBuilder, ResourceLocation id, FinishedTextureConsumer consumer)
+    public Texture getTexture(ResourceLocation textureLoc)
     {
-        consumer.acceptFinishedTextureMetadata(metaBuilder, id);
-    }
-
-    public void finish(BufferedImage texture, TextureMetaBuilder metaBuilder, ResourceLocation id,
-            FinishedTextureConsumer consumer)
-    {
-        consumer.acceptFinished(texture, metaBuilder, id);
-    }
-
-    public abstract static class FinishedTextureConsumer
-    {
-        void acceptFinished(BufferedImage texture, TextureMetaBuilder metaBuilder, ResourceLocation id)
-        {
-            acceptFinishedTexture(texture, id);
-            acceptFinishedTextureMetadata(metaBuilder, id);
-        }
-
-        abstract void acceptFinishedTexture(BufferedImage texture, ResourceLocation id);
-        abstract void acceptFinishedTextureMetadata(TextureMetaBuilder metaBuilder, ResourceLocation id);
+        return new Texture(getRawTexture(textureLoc), tryGetTextureMeta(textureLoc));
     }
 
     public Optional<TextureMetaBuilder> tryGetTextureMeta(ResourceLocation textureLoc)
     {
         if (providedTextureMetas.containsKey(textureLoc))
         {
-            return Optional.of(TextureMetaBuilder.copy(providedTextureMetas.get(textureLoc)));
+            return Optional.of(providedTextureMetas.get(textureLoc).copy());
         }
         ResourceLocation loc =
                 new ResourceLocation(textureLoc.getNamespace(), "textures/" + textureLoc.getPath() + ".png.mcmeta");
@@ -369,27 +364,7 @@ public abstract class TextureProvider implements IDataProvider
         return Optional.empty();
     }
 
-    @Nullable public TextureMetaBuilder getTextureMeta(ResourceLocation textureLoc)
-    {
-        if (providedTextureMetas.containsKey(textureLoc))
-        {
-            return TextureMetaBuilder.copy(providedTextureMetas.get(textureLoc));
-        }
-        ResourceLocation loc =
-                new ResourceLocation(textureLoc.getNamespace(), "textures/" + textureLoc.getPath() + ".png.mcmeta");
-        Preconditions.checkArgument(existingFileHelper.exists(loc, ResourcePackType.CLIENT_RESOURCES),
-                "Texture metadata %s does not exist in any known resource pack", loc);
-        try
-        {
-            IResource resource = existingFileHelper.getResource(loc, ResourcePackType.CLIENT_RESOURCES);
-            return TextureMetaBuilder.fromInputStream(resource.getInputStream());
-        } catch (IOException ioException)
-        {
-            throw new RuntimeException(String.format("Couldn't read texture metadata %s", textureLoc), ioException);
-        }
-    }
-
-    @Nullable public BufferedImage getTexture(ResourceLocation textureLoc)
+    protected BufferedImage getRawTexture(ResourceLocation textureLoc)
     {
         if (providedTextures.containsKey(textureLoc))
         {
@@ -409,17 +384,51 @@ public abstract class TextureProvider implements IDataProvider
         }
     }
 
-    public static BufferedImage copyTexture(BufferedImage texture)
-    {
-        ColorModel colorModel = texture.getColorModel();
-        boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
-        WritableRaster raster = texture.copyData(texture.getRaster().createCompatibleWritableRaster());
-        return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
-    }
-
     public void promiseGeneration(ResourceLocation texture)
     {
         this.existingFileHelper.trackGenerated(texture, ResourcePackType.CLIENT_RESOURCES, ".png", "textures");
+    }
+
+    public static class Texture
+    {
+        protected BufferedImage texture;
+        @Nullable protected TextureMetaBuilder textureMetaBuilder;
+
+        public Texture(BufferedImage texture, Optional<TextureMetaBuilder> textureMetaBuilder)
+        {
+            this(texture, textureMetaBuilder.orElse(null));
+        }
+
+        private Texture(BufferedImage texture, @Nullable TextureMetaBuilder textureMetaBuilder)
+        {
+            this.texture = texture;
+            this.textureMetaBuilder = textureMetaBuilder;
+        }
+
+        public BufferedImage getTexture()
+        {
+            return texture;
+        }
+
+        public void setTexture(BufferedImage texture)
+        {
+            this.texture = texture;
+        }
+
+        public Texture copy()
+        {
+            return new Texture(copyTexture(texture), textureMetaBuilder == null ? null : textureMetaBuilder.copy());
+        }
+
+        @Nullable public TextureMetaBuilder getTextureMetaBuilder()
+        {
+            return textureMetaBuilder;
+        }
+
+        public void setTextureMetaBuilder(@Nullable TextureMetaBuilder textureMetaBuilder)
+        {
+            this.textureMetaBuilder = textureMetaBuilder;
+        }
     }
 
     public static class TextureMetaBuilder
@@ -427,15 +436,6 @@ public abstract class TextureProvider implements IDataProvider
         protected Optional<Boolean> interpolate = Optional.empty();
         protected Optional<Integer> frameTime = Optional.empty();
         protected Optional<int[]> frames = Optional.empty();
-
-        public static TextureMetaBuilder copy(TextureMetaBuilder original)
-        {
-            TextureMetaBuilder metaBuilder = new TextureMetaBuilder();
-            metaBuilder.interpolate = original.interpolate;
-            metaBuilder.frameTime = original.frameTime;
-            metaBuilder.frames = original.frames;
-            return metaBuilder;
-        }
 
         @Nullable public static TextureMetaBuilder fromInputStream(InputStream inputStream)
         {
@@ -471,6 +471,15 @@ public abstract class TextureProvider implements IDataProvider
             {
                 return null;
             }
+        }
+
+        public TextureMetaBuilder copy()
+        {
+            TextureMetaBuilder metaBuilder = new TextureMetaBuilder();
+            metaBuilder.interpolate = interpolate;
+            metaBuilder.frameTime = frameTime;
+            metaBuilder.frames = frames;
+            return metaBuilder;
         }
 
         public TextureMetaBuilder setInterpolate(boolean interpolate)
@@ -509,5 +518,10 @@ public abstract class TextureProvider implements IDataProvider
             });
             return json;
         }
+    }
+
+    public abstract static class FinishedTextureConsumer
+    {
+        abstract void accept(Texture texture, ResourceLocation id);
     }
 }

@@ -3,6 +3,7 @@ package mrp_v2.mrplibrary.datagen.providers;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
 import mrp_v2.mrplibrary.datagen.BlockLootTables;
+import mrp_v2.mrplibrary.util.IModLocProvider;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.loot.*;
 import net.minecraft.util.ResourceLocation;
@@ -13,7 +14,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class LootTableProvider extends net.minecraft.data.LootTableProvider
+public class LootTableProvider extends net.minecraft.data.LootTableProvider implements IModLocProvider
 {
     private final List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootParameterSet>>
             lootTables;
@@ -28,14 +29,14 @@ public class LootTableProvider extends net.minecraft.data.LootTableProvider
             Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>> lootTablesProvider, String modId)
     {
         super(dataGeneratorIn);
-        this.lootTables = ImmutableList.of(Pair.of(lootTablesProvider, LootParameterSets.BLOCK));
+        lootTables = ImmutableList.of(Pair.of(lootTablesProvider, LootParameterSets.BLOCK));
         this.modId = modId;
     }
 
     @Override
     protected List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootParameterSet>> getTables()
     {
-        return this.lootTables;
+        return lootTables;
     }
 
     @Override protected void validate(Map<ResourceLocation, LootTable> map, ValidationTracker validationtracker)
@@ -46,6 +47,11 @@ public class LootTableProvider extends net.minecraft.data.LootTableProvider
 
     @Override public String getName()
     {
-        return super.getName() + ": " + this.modId;
+        return super.getName() + ": " + modId;
+    }
+
+    @Override public String getModId()
+    {
+        return modId;
     }
 }

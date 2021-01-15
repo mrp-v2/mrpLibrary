@@ -23,6 +23,8 @@ public class DataGeneratorHelper
     private final String modId;
     private final ExistingFileHelper existingFileHelper;
     private final net.minecraft.data.BlockTagsProvider blockTagsProvider;
+    private final boolean includeClient;
+    private final boolean includeServer;
 
     public DataGeneratorHelper(GatherDataEvent event, String modId)
     {
@@ -31,70 +33,102 @@ public class DataGeneratorHelper
         this.existingFileHelper = event.getExistingFileHelper();
         this.blockTagsProvider =
                 new net.minecraft.data.BlockTagsProvider(this.dataGenerator, this.modId, this.existingFileHelper);
+        includeClient = event.includeClient();
+        includeServer = event.includeServer();
     }
 
     public void addTextureProvider(
             Function3<DataGenerator, ExistingFileHelper, String, ? extends TextureProvider> textureProviderConstructor)
     {
-        this.dataGenerator
-                .addProvider(textureProviderConstructor.apply(this.dataGenerator, this.existingFileHelper, this.modId));
+        if (includeClient)
+        {
+            this.dataGenerator.addProvider(
+                    textureProviderConstructor.apply(this.dataGenerator, this.existingFileHelper, this.modId));
+        }
     }
 
     public void addParticleProvider(
             BiFunction<DataGenerator, String, ? extends ParticleProvider> particleProviderConstructor)
     {
-        this.dataGenerator.addProvider(particleProviderConstructor.apply(this.dataGenerator, this.modId));
+        if (includeClient)
+        {
+            this.dataGenerator.addProvider(particleProviderConstructor.apply(this.dataGenerator, this.modId));
+        }
     }
 
     public void addLootTableProvider(
             Function3<DataGenerator, Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, String, ? extends LootTableProvider> lootTableProviderConstructor,
             Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>> lootTablesProvider)
     {
-        this.dataGenerator
-                .addProvider(lootTableProviderConstructor.apply(this.dataGenerator, lootTablesProvider, this.modId));
+        if (includeServer)
+        {
+            this.dataGenerator.addProvider(
+                    lootTableProviderConstructor.apply(this.dataGenerator, lootTablesProvider, this.modId));
+        }
     }
 
     public void addLootTables(BlockLootTables blockLootTables)
     {
-        this.dataGenerator.addProvider(new LootTableProvider(this.dataGenerator, blockLootTables, this.modId));
+        if (includeServer)
+        {
+            this.dataGenerator.addProvider(new LootTableProvider(this.dataGenerator, blockLootTables, this.modId));
+        }
     }
 
     public void addRecipeProvider(BiFunction<DataGenerator, String, ? extends RecipeProvider> recipeProviderConstructor)
     {
-        this.dataGenerator.addProvider(recipeProviderConstructor.apply(this.dataGenerator, this.modId));
+        if (includeServer)
+        {
+            this.dataGenerator.addProvider(recipeProviderConstructor.apply(this.dataGenerator, this.modId));
+        }
     }
 
     public void addItemTagsProvider(
             Function4<DataGenerator, net.minecraft.data.BlockTagsProvider, String, ExistingFileHelper, ? extends ItemTagsProvider> itemTagsProviderConstructor)
     {
-        this.dataGenerator.addProvider(itemTagsProviderConstructor
-                .apply(this.dataGenerator, this.blockTagsProvider, this.modId, this.existingFileHelper));
+        if (includeServer)
+        {
+            this.dataGenerator.addProvider(itemTagsProviderConstructor
+                    .apply(this.dataGenerator, this.blockTagsProvider, this.modId, this.existingFileHelper));
+        }
     }
 
     public void addBlockTagsProvider(
             Function3<DataGenerator, String, ExistingFileHelper, ? extends BlockTagsProvider> blockTagsProviderConstructor)
     {
-        this.dataGenerator.addProvider(
-                blockTagsProviderConstructor.apply(this.dataGenerator, this.modId, this.existingFileHelper));
+        if (includeServer)
+        {
+            this.dataGenerator.addProvider(
+                    blockTagsProviderConstructor.apply(this.dataGenerator, this.modId, this.existingFileHelper));
+        }
     }
 
     public void addBlockStateProvider(
             Function3<DataGenerator, String, ExistingFileHelper, ? extends BlockStateProvider> blockStateProviderConstructor)
     {
-        this.dataGenerator.addProvider(
-                blockStateProviderConstructor.apply(this.dataGenerator, this.modId, this.existingFileHelper));
+        if (includeClient)
+        {
+            this.dataGenerator.addProvider(
+                    blockStateProviderConstructor.apply(this.dataGenerator, this.modId, this.existingFileHelper));
+        }
     }
 
     public void addItemModelProvider(
             Function3<DataGenerator, String, ExistingFileHelper, ? extends ItemModelProvider> itemModelProviderConstructor)
     {
-        this.dataGenerator.addProvider(
-                itemModelProviderConstructor.apply(this.dataGenerator, this.modId, this.existingFileHelper));
+        if (includeClient)
+        {
+            this.dataGenerator.addProvider(
+                    itemModelProviderConstructor.apply(this.dataGenerator, this.modId, this.existingFileHelper));
+        }
     }
 
     public void addLanguageProvider(
             BiFunction<DataGenerator, String, ? extends LanguageProvider> languageProviderConstructor)
     {
-        this.dataGenerator.addProvider(languageProviderConstructor.apply(this.dataGenerator, this.modId));
+        if (includeClient)
+        {
+            this.dataGenerator.addProvider(languageProviderConstructor.apply(this.dataGenerator, this.modId));
+        }
     }
 }

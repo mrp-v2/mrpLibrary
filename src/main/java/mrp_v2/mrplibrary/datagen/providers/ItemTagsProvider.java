@@ -1,12 +1,13 @@
 package mrp_v2.mrplibrary.datagen.providers;
 
+import mrp_v2.mrplibrary.util.IModLocProvider;
 import net.minecraft.data.BlockTagsProvider;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
 import javax.annotation.Nullable;
 
-public abstract class ItemTagsProvider extends net.minecraft.data.ItemTagsProvider
+public abstract class ItemTagsProvider extends net.minecraft.data.ItemTagsProvider implements IModLocProvider
 {
     protected ItemTagsProvider(DataGenerator dataGenerator, BlockTagsProvider blockTagProvider, String modId,
             @Nullable ExistingFileHelper existingFileHelper)
@@ -18,6 +19,11 @@ public abstract class ItemTagsProvider extends net.minecraft.data.ItemTagsProvid
 
     @Override public String getName()
     {
-        return super.getName() + ": " + this.modId;
+        return super.getName() + ": " + modId;
+    }
+
+    @Override public String getModId()
+    {
+        return modId;
     }
 }
