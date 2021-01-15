@@ -347,6 +347,28 @@ public abstract class TextureProvider implements IDataProvider
         abstract void acceptFinishedTextureMetadata(TextureMetaBuilder metaBuilder, ResourceLocation id);
     }
 
+    public Optional<TextureMetaBuilder> tryGetTextureMeta(ResourceLocation textureLoc)
+    {
+        if (providedTextureMetas.containsKey(textureLoc))
+        {
+            return Optional.of(TextureMetaBuilder.copy(providedTextureMetas.get(textureLoc)));
+        }
+        ResourceLocation loc =
+                new ResourceLocation(textureLoc.getNamespace(), "textures/" + textureLoc.getPath() + ".png.mcmeta");
+        if (existingFileHelper.exists(loc, ResourcePackType.CLIENT_RESOURCES))
+        {
+            try
+            {
+                IResource resource = existingFileHelper.getResource(loc, ResourcePackType.CLIENT_RESOURCES);
+                return Optional.of(TextureMetaBuilder.fromInputStream(resource.getInputStream()));
+            } catch (IOException ioException)
+            {
+                LOGGER.error(String.format("Couldn't read texture metadata %s", textureLoc), ioException);
+            }
+        }
+        return Optional.empty();
+    }
+
     @Nullable public TextureMetaBuilder getTextureMeta(ResourceLocation textureLoc)
     {
         if (providedTextureMetas.containsKey(textureLoc))
@@ -363,8 +385,7 @@ public abstract class TextureProvider implements IDataProvider
             return TextureMetaBuilder.fromInputStream(resource.getInputStream());
         } catch (IOException ioException)
         {
-            LOGGER.error("Couldn't read texture {}", textureLoc, ioException);
-            return null;
+            throw new RuntimeException(String.format("Couldn't read texture metadata %s", textureLoc), ioException);
         }
     }
 
@@ -384,8 +405,7 @@ public abstract class TextureProvider implements IDataProvider
             return ImageIO.read(resource.getInputStream());
         } catch (IOException ioException)
         {
-            LOGGER.error("Couldn't read texture {}", textureLoc, ioException);
-            return null;
+            throw new RuntimeException(String.format("Couldn't read texture %s", textureLoc), ioException);
         }
     }
 
