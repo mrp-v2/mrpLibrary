@@ -299,18 +299,7 @@ curseforge {
     project {
         id = projectId
         StringBuilder out = new StringBuilder(), error = new StringBuilder()
-        Process thisVersionProcess = ['git', 'describe', '--tags', '--abbrev=0'].execute()
-        thisVersionProcess.consumeProcessOutput(out, error)
-        thisVersionProcess.waitFor()
-        String thisVersion = out.toString().trim()
-        if (thisVersion.isEmpty())
-        {
-            thisVersion = error.toString().trim()
-        }
-        out = new StringBuilder()
-        error = new StringBuilder()
-        println('This Version: ' + thisVersion)
-        Process previousVersionProcess = ['git', 'describe', '--tags', '--abbrev=0', "${thisVersion}^"].execute()
+        Process previousVersionProcess = ['git', 'describe', '--tags', '--abbrev=0', "${version}^"].execute()
         previousVersionProcess.consumeProcessOutput(out, error)
         previousVersionProcess.waitFor()
         String previousVersion = out.toString().trim()
@@ -321,7 +310,7 @@ curseforge {
         out = new StringBuilder()
         error = new StringBuilder()
         println('Previous Version: ' + previousVersion)
-        Process gitLogProcess = ['git', 'log', '--pretty=format:"%s"', "${previousVersion}..${thisVersion}"].execute()
+        Process gitLogProcess = ['git', 'log', '--pretty=format:"%s"', "${previousVersion}..${version}"].execute()
         gitLogProcess.consumeProcessOutput(out, error)
         gitLogProcess.waitFor()
         String changelogStr = out.toString().trim()
