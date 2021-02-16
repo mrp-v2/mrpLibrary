@@ -299,26 +299,20 @@ curseforge {
     project {
         id = projectId
         StringBuilder out = new StringBuilder(), error = new StringBuilder()
-        Process previousVersionProcess = ['git', 'describe', '--tags', '--abbrev=0', "${version}^"].execute()
+        Process previousVersionProcess = ['git', 'describe', '--tags', '--debug', '--abbrev=0', "${version}^"].execute()
         previousVersionProcess.consumeProcessOutput(out, error)
         previousVersionProcess.waitFor()
         String previousVersion = out.toString().trim()
-        if (previousVersion.isEmpty())
-        {
-            previousVersion = error.toString().trim()
-        }
         out = new StringBuilder()
-        error = new StringBuilder()
         println('Previous Version: ' + previousVersion)
+        println('Error?: ' + error.toString().trim())
+        error = new StringBuilder()
         Process gitLogProcess = ['git', 'log', '--pretty=format:"%s"', "${previousVersion}..${version}"].execute()
         gitLogProcess.consumeProcessOutput(out, error)
         gitLogProcess.waitFor()
         String changelogStr = out.toString().trim()
-        if (changelogStr.isEmpty())
-        {
-            changelogStr = error.toString().trim()
-        }
         println('Changelog: ' + changelogStr)
+        println('Error?: ' + error.toString().trim())
         changelog = changelogStr
         releaseType = 'release'
         mainArtifact jar
