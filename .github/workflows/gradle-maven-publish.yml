@@ -16,6 +16,8 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
+      - name: Fetch tags
+        run: git fetch --prune --unshallow --tags
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Publish to Github Packages
