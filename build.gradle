@@ -64,6 +64,7 @@ if (mrpLibVersion != 'none')
 archivesBaseName = modId
 group = "${author}.${archivesBaseName}"
 boolean usesMixins = file("src/main/resources/${modId}.mixins.json").exists()
+File secretFile = file '../secrets.json'
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' +
         System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
@@ -139,7 +140,6 @@ repositories {
         url = new URL('https://maven.pkg.github.com/mrp-v2/mrpLibrary')
         credentials {
             username = 'mrp-v2'
-            File secretFile = new File('../secrets.json')
             String token = System.getenv('GITHUB_TOKEN')
             if (secretFile.exists())
             {
@@ -292,7 +292,10 @@ if (usesMixins)
 
 curseforge {
     apiKey = System.getenv('CURSEFORGE_API_KEY')
-    apiKey = apiKey == null ? new JsonSlurper().parse(new File('../secrets.json')).get('curseforge-api-token') : apiKey
+    if (secretFile.exists())
+    {
+        apiKey = new JsonSlurper().parse(secretFile).get('curseforge-api-token')
+    }
     project {
         id = projectId
         StringBuilder out = new StringBuilder(), error = new StringBuilder()
