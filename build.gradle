@@ -233,7 +233,10 @@ publishing {
             url = uri('https://maven.pkg.github.com/mrp-v2/' + capitalizedModId)
             credentials {
                 username = 'mrp-v2'
-                password = System.getenv('GITHUB_TOKEN')
+                if (secretFile.exists())
+                {
+                    password = new JsonSlurper().parse(new File('../secrets.json')).get('github-packages-token')
+                }
             }
         }
     }
@@ -286,6 +289,11 @@ if (usesMixins)
     }
 }
 
+task publishToGithubAndCurseforge {
+    dependsOn ':publishGprPublicationToGitHubPackagesRepository'
+    dependsOn ":curseforge${projectId}"
+}
+
 curseforge {
     if (secretFile.exists())
     {
@@ -310,19 +318,18 @@ curseforge {
         println('Error?: ' + error.toString().trim())
         changelog = changelogStr
         releaseType = 'release'
-        mainArtifact jar
         addGameVersion mcVersion
-        relations {
-            if (mrpLibVersion != 'none')
-            {
+        if (mrpLibVersion != 'none')
+        {
+            relations {
                 requiredDependency 'mrp-library'
             }
         }
     }
     options {
-        debug = true
+        debug = false
         javaVersionAutoDetect = false
-        javaIntegration = false
-        forgeGradleIntegration = false
+        javaIntegration = true
+        forgeGradleIntegration = true
     }
 }
