@@ -140,13 +140,9 @@ repositories {
         url = new URL('https://maven.pkg.github.com/mrp-v2/mrpLibrary')
         credentials {
             username = 'mrp-v2'
-            String token = System.getenv('GITHUB_TOKEN')
             if (secretFile.exists())
             {
                 password = new JsonSlurper().parse(new File('../secrets.json')).get('github-packages-token')
-            } else if (token != null)
-            {
-                password = token
             }
         }
     }
@@ -291,7 +287,6 @@ if (usesMixins)
 }
 
 curseforge {
-    apiKey = System.getenv('CURSEFORGE_API_KEY')
     if (secretFile.exists())
     {
         apiKey = new JsonSlurper().parse(secretFile).get('curseforge-api-token')
@@ -299,7 +294,7 @@ curseforge {
     project {
         id = projectId
         StringBuilder out = new StringBuilder(), error = new StringBuilder()
-        Process previousVersionProcess = ['git', 'describe', '--tags', '--debug', '--abbrev=0', "${version}^"].execute()
+        Process previousVersionProcess = ['git', 'describe', '--tags', '--abbrev=0', "${version}^"].execute()
         previousVersionProcess.consumeProcessOutput(out, error)
         previousVersionProcess.waitFor()
         String previousVersion = out.toString().trim()
