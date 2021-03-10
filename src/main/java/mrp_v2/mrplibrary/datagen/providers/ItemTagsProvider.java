@@ -15,7 +15,7 @@ public abstract class ItemTagsProvider extends net.minecraft.data.ItemTagsProvid
         super(dataGenerator, blockTagProvider, modId, existingFileHelper);
     }
 
-    @Override protected abstract void registerTags();
+    @Override protected abstract void addTags();
 
     @Override public String getName()
     {

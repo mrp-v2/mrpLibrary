@@ -78,9 +78,8 @@ public abstract class LanguageProvider extends net.minecraftforge.common.data.La
 
     public void add(ItemGroup key, String name)
     {
-        TranslationTextComponent test =
-                key.getGroupName() instanceof TranslationTextComponent ? (TranslationTextComponent) key.getGroupName() :
-                        null;
+        TranslationTextComponent test = key.getDisplayName() instanceof TranslationTextComponent ?
+                (TranslationTextComponent) key.getDisplayName() : null;
         if (test != null)
         {
             add(test.getKey(), name);
@@ -94,11 +93,11 @@ public abstract class LanguageProvider extends net.minecraftforge.common.data.La
     public void add(KeyBinding keybind, String description, String category)
     {
         add(keybind, description);
-        add(keybind.getKeyCategory(), category);
+        add(keybind.getCategory(), category);
     }
 
     public void add(KeyBinding keybind, String description)
     {
-        add(keybind.getKeyDescription(), description);
+        add(keybind.getName(), description);
     }
 }

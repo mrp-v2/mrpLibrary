@@ -42,7 +42,7 @@ public class LootTableProvider extends net.minecraft.data.LootTableProvider impl
     @Override protected void validate(Map<ResourceLocation, LootTable> map, ValidationTracker validationtracker)
     {
         map.forEach((resourceLocation, lootTable) -> LootTableManager
-                .validateLootTable(validationtracker, resourceLocation, lootTable));
+                .validate(validationtracker, resourceLocation, lootTable));
     }
 
     @Override public String getName()

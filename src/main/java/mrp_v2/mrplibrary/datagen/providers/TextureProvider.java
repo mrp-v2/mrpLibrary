@@ -224,7 +224,7 @@ public abstract class TextureProvider implements IDataProvider, IModLocProvider
         return modId;
     }
 
-    @Override public void act(DirectoryCache cache)
+    @Override public void run(DirectoryCache cache)
     {
         addTextures(new FinishedTextureConsumer()
         {
@@ -263,8 +263,8 @@ public abstract class TextureProvider implements IDataProvider, IModLocProvider
     protected void saveTextureMeta(DirectoryCache cache, TextureMetaBuilder metaBuilder, Path path)
     {
         String json = GSON.toJson(metaBuilder.toJson());
-        String hash = HASH_FUNCTION.hashUnencodedChars(json).toString();
-        if (!Objects.equals(cache.getPreviousHash(path), hash) || !Files.exists(path))
+        String hash = SHA1.hashUnencodedChars(json).toString();
+        if (!Objects.equals(cache.getHash(path), hash) || !Files.exists(path))
         {
             try
             {
@@ -281,7 +281,7 @@ public abstract class TextureProvider implements IDataProvider, IModLocProvider
                 LOGGER.error("Couldn't save metadata for texture {}", path, ioException);
             }
         }
-        cache.recordHash(path, hash);
+        cache.putNew(path, hash);
     }
 
     protected Path getTexturePath(ResourceLocation texture)
@@ -292,13 +292,13 @@ public abstract class TextureProvider implements IDataProvider, IModLocProvider
 
     protected void saveTexture(DirectoryCache cache, BufferedImage texture, Path path)
     {
-        Hasher hasher = HASH_FUNCTION.newHasher();
+        Hasher hasher = SHA1.newHasher();
         for (int i : texture.getRGB(0, 0, texture.getWidth(), texture.getHeight(), null, 0, texture.getWidth()))
         {
             hasher.putInt(i);
         }
         String hash = hasher.hash().toString();
-        if (!Objects.equals(cache.getPreviousHash(path), hash) || !Files.exists(path))
+        if (!Objects.equals(cache.getHash(path), hash) || !Files.exists(path))
         {
             try
             {
@@ -315,7 +315,7 @@ public abstract class TextureProvider implements IDataProvider, IModLocProvider
                 LOGGER.error("Couldn't save texture {}", path, ioException);
             }
         }
-        cache.recordHash(path, hash);
+        cache.putNew(path, hash);
     }
 
     protected static BufferedImage copyTexture(BufferedImage texture)
@@ -441,8 +441,8 @@ public abstract class TextureProvider implements IDataProvider, IModLocProvider
         {
             BufferedReader bufferedReader =
                     new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-            JsonObject json =
-                    JSONUtils.getJsonObject(JSONUtils.fromJson(GSON, bufferedReader, JsonElement.class), "top element");
+            JsonObject json = JSONUtils
+                    .convertToJsonObject(JSONUtils.fromJson(GSON, bufferedReader, JsonElement.class), "top element");
             if (json.has("animation"))
             {
                 JsonObject animationJson = json.getAsJsonObject("animation");

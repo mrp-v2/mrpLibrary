@@ -44,7 +44,7 @@ public abstract class ParticleProvider implements IDataProvider, IModLocProvider
         return modId;
     }
 
-    @Override public void act(DirectoryCache cache) throws IOException
+    @Override public void run(DirectoryCache cache) throws IOException
     {
         Path path = generator.getOutputFolder();
         Set<ResourceLocation> locationSet = new HashSet<>();
@@ -74,8 +74,8 @@ public abstract class ParticleProvider implements IDataProvider, IModLocProvider
         try
         {
             String json = GSON.toJson(particle);
-            String hash = HASH_FUNCTION.hashUnencodedChars(json).toString();
-            if (!Objects.equals(cache.getPreviousHash(path), hash) || !Files.exists(path))
+            String hash = SHA1.hashUnencodedChars(json).toString();
+            if (!Objects.equals(cache.getHash(path), hash) || !Files.exists(path))
             {
                 Files.createDirectories(path.getParent());
                 try (BufferedWriter writer = Files.newBufferedWriter(path))
@@ -83,7 +83,7 @@ public abstract class ParticleProvider implements IDataProvider, IModLocProvider
                     writer.write(json);
                 }
             }
-            cache.recordHash(path, hash);
+            cache.putNew(path, hash);
         } catch (IOException ioException)
         {
             LOGGER.error("Couldn't save particle {}", path, ioException);

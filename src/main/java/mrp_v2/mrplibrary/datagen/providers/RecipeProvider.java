@@ -16,7 +16,7 @@ public abstract class RecipeProvider extends net.minecraft.data.RecipeProvider i
         this.modId = modId;
     }
 
-    @Override protected abstract void registerRecipes(Consumer<IFinishedRecipe> consumer);
+    @Override protected abstract void buildShapelessRecipes(Consumer<IFinishedRecipe> consumer);
 
     @Override public String getName()
     {

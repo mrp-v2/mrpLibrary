@@ -13,7 +13,7 @@ public abstract class BlockTagsProvider extends net.minecraft.data.BlockTagsProv
         super(generatorIn, modId, existingFileHelper);
     }
 
-    @Override protected abstract void registerTags();
+    @Override protected abstract void addTags();
 
     @Override public String getName()
     {
