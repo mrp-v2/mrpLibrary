@@ -6,8 +6,11 @@ import net.minecraft.block.*;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourcePackType;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.model.generators.ModelBuilder;
 import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraftforge.common.data.ExistingFileHelper;
+
+import java.util.function.Consumer;
 
 public abstract class BlockStateProvider extends net.minecraftforge.client.model.generators.BlockStateProvider
         implements IModLocProvider
@@ -29,6 +32,27 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
     @Override public String getModId()
     {
         return modId;
+    }
+
+    protected <T extends ModelBuilder<T>> ModelBuilder<T> forEachElement(ModelBuilder<T> builder,
+            Consumer<ModelBuilder<T>.ElementBuilder> elementConsumer)
+    {
+        for (int i = 0; i < Integer.MAX_VALUE; i++)
+        {
+            ModelBuilder<T>.ElementBuilder elementBuilder;
+            try
+            {
+                elementBuilder = builder.element(i);
+            } catch (IndexOutOfBoundsException e)
+            {
+                break;
+            }
+            if (elementBuilder != null)
+            {
+                elementConsumer.accept(elementBuilder);
+            }
+        }
+        return builder;
     }
 
     public void promiseGeneration(ResourceLocation model)
@@ -237,6 +261,27 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
         wallBlockInternalTinted(block, name + "_wall", texture);
     }
 
+    public TrapDoorBlockModels trapDoorBlockTinted(String baseName, ResourceLocation texture)
+    {
+        return new TrapDoorBlockModels(
+                models().singleTexture(baseName + "_bottom", TintedBlockStateGenerator.TEMPLATE_TRAPDOOR_BOTTOM_TINTED,
+                        "texture", texture),
+                models().singleTexture(baseName + "_top", TintedBlockStateGenerator.TEMPLATE_TRAPDOOR_TOP_TINTED,
+                        "texture", texture),
+                models().singleTexture(baseName + "_open", TintedBlockStateGenerator.TEMPLATE_TRAPDOOR_OPEN_TINTED,
+                        "texture", texture));
+    }
+
+    public TrapDoorBlockModels trapDoorBlockOrientableTinted(String baseName, ResourceLocation texture)
+    {
+        return new TrapDoorBlockModels(models().singleTexture(baseName + "_bottom",
+                TintedBlockStateGenerator.TEMPLATE_ORIENTABLE_TRAPDOOR_BOTTOM_TINTED, "texture", texture),
+                models().singleTexture(baseName + "_top",
+                        TintedBlockStateGenerator.TEMPLATE_ORIENTABLE_TRAPDOOR_TOP_TINTED, "texture", texture),
+                models().singleTexture(baseName + "_open",
+                        TintedBlockStateGenerator.TEMPLATE_ORIENTABLE_TRAPDOOR_OPEN_TINTED, "texture", texture));
+    }
+
     public static class StairsBlockModels
     {
         private final ModelFile stairs, stairsInner, stairsOuter;
@@ -390,6 +435,33 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
         public ModelFile getCubeColumnHorizontal()
         {
             return cubeColumnHorizontal;
+        }
+    }
+
+    public static class TrapDoorBlockModels
+    {
+        private final ModelFile bottom, top, open;
+
+        public TrapDoorBlockModels(ModelFile bottom, ModelFile top, ModelFile open)
+        {
+            this.bottom = bottom;
+            this.top = top;
+            this.open = open;
+        }
+
+        public ModelFile getBottom()
+        {
+            return bottom;
+        }
+
+        public ModelFile getTop()
+        {
+            return top;
+        }
+
+        public ModelFile getOpen()
+        {
+            return open;
         }
     }
 }
