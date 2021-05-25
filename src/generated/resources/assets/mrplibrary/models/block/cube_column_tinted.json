@@ -2,11 +2,11 @@
   "parent": "mrplibrary:block/cube_tinted",
   "textures": {
     "particle": "#side",
+    "down": "#end",
+    "up": "#end",
     "north": "#side",
     "east": "#side",
     "south": "#side",
-    "west": "#side",
-    "up": "#end",
-    "down": "#end"
+    "west": "#side"
   }
 }

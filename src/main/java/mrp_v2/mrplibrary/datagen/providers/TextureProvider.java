@@ -380,7 +380,7 @@ public abstract class TextureProvider implements IDataProvider, IModLocProvider
             return ImageIO.read(resource.getInputStream());
         } catch (IOException ioException)
         {
-            throw new RuntimeException(String.format("Couldn't read texture %s", textureLoc), ioException);
+            throw new RuntimeException(String.format("Error while reading texture %s", textureLoc), ioException);
         }
     }
 

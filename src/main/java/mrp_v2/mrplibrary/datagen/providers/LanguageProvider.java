@@ -8,15 +8,12 @@ import net.minecraft.util.text.TranslationTextComponent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 public abstract class LanguageProvider extends net.minecraftforge.common.data.LanguageProvider
         implements IModLocProvider
 {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final Map<String, Map<String, Map<String, String>>> staticTranslations = new HashMap<>();
     protected final String modid;
     protected final String locale;
 
@@ -27,25 +24,19 @@ public abstract class LanguageProvider extends net.minecraftforge.common.data.La
         this.locale = locale;
     }
 
-    public static TranslationTextComponent makeTextTranslation(String prefix, String modId, String suffix,
-            String locale, String name)
+    @Deprecated // TODO remove in next API change
+    public static TranslationTextComponent makeTextTranslation(String prefix, String modId, String suffix, String locale, String name)
     {
         return new TranslationTextComponent(makeStringTranslation(prefix, modId, suffix, locale, name));
     }
 
+    @Deprecated // TODO remove in next API change
     public static String makeStringTranslation(String prefix, String modId, String suffix, String locale, String name)
     {
-        Map<String, Map<String, String>> modMap = staticTranslations.computeIfAbsent(modId, k -> new HashMap<>());
-        Map<String, String> localeMap = modMap.computeIfAbsent(locale, k -> new HashMap<>());
-        String id = prefix + modId + suffix;
-        if (localeMap.containsKey(id))
-        {
-            LOGGER.warn("Overriding translation '" + id + "'");
-        }
-        localeMap.put(id, name);
-        return id;
+        return prefix + modId + suffix;
     }
 
+    @Deprecated // TODO remove in next API change
     public static Function<Object[], TranslationTextComponent> makeFormattedTextTranslation(String prefix, String modId,
             String suffix, String locale, String name)
     {
@@ -53,17 +44,9 @@ public abstract class LanguageProvider extends net.minecraftforge.common.data.La
         return (Object[] args) -> new TranslationTextComponent(unformattedName, args);
     }
 
+    // TODO make abstract in next API change
     @Override protected void addTranslations()
     {
-        Map<String, Map<String, String>> modMap = staticTranslations.get(modid);
-        if (modMap != null)
-        {
-            Map<String, String> localeMap = modMap.get(locale);
-            if (localeMap != null)
-            {
-                localeMap.forEach(this::add);
-            }
-        }
     }
 
     @Override public String getName()
@@ -85,7 +68,7 @@ public abstract class LanguageProvider extends net.minecraftforge.common.data.La
             add(test.getKey(), name);
         } else
         {
-            LogManager.getLogger().warn("Could not make a translation for " + key +
+            LOGGER.warn("Could not make a translation for " + key +
                     " because its groupName is not a TranslationTextComponent!");
         }
     }
