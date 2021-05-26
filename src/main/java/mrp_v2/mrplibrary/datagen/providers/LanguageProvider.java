@@ -25,7 +25,8 @@ public abstract class LanguageProvider extends net.minecraftforge.common.data.La
     }
 
     @Deprecated // TODO remove in next API change
-    public static TranslationTextComponent makeTextTranslation(String prefix, String modId, String suffix, String locale, String name)
+    public static TranslationTextComponent makeTextTranslation(String prefix, String modId, String suffix,
+            String locale, String name)
     {
         return new TranslationTextComponent(makeStringTranslation(prefix, modId, suffix, locale, name));
     }
@@ -82,5 +83,10 @@ public abstract class LanguageProvider extends net.minecraftforge.common.data.La
     public void add(KeyBinding keybind, String description)
     {
         add(keybind.getName(), description);
+    }
+
+    public void add(TranslationTextComponent key, String name)
+    {
+        add(key.getKey(), name);
     }
 }
