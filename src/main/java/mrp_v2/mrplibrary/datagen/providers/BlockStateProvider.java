@@ -2,7 +2,13 @@ package mrp_v2.mrplibrary.datagen.providers;
 
 import mrp_v2.mrplibrary.datagen.TintedBlockStateGenerator;
 import mrp_v2.mrplibrary.util.IModLocProvider;
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.FenceBlock;
+import net.minecraft.block.FenceGateBlock;
+import net.minecraft.block.RotatedPillarBlock;
+import net.minecraft.block.SlabBlock;
+import net.minecraft.block.StairsBlock;
+import net.minecraft.block.WallBlock;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourcePackType;
 import net.minecraft.util.ResourceLocation;
@@ -37,20 +43,9 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
     protected <T extends ModelBuilder<T>> ModelBuilder<T> forEachElement(ModelBuilder<T> builder,
             Consumer<ModelBuilder<T>.ElementBuilder> elementConsumer)
     {
-        for (int i = 0; i < Integer.MAX_VALUE; i++)
+        for (int i = 0; i < builder.getElementCount(); i++)
         {
-            ModelBuilder<T>.ElementBuilder elementBuilder;
-            try
-            {
-                elementBuilder = builder.element(i);
-            } catch (IndexOutOfBoundsException e)
-            {
-                break;
-            }
-            if (elementBuilder != null)
-            {
-                elementConsumer.accept(elementBuilder);
-            }
+            elementConsumer.accept(builder.element(i));
         }
         return builder;
     }
