@@ -47,7 +47,7 @@ String homepageURL = "https://www.curseforge.com/minecraft/mc-mods/${modDisplayN
 String issuesURL = "${homepageURL}/issues"
 String updateURL = "https://raw.githubusercontent.com/mrp-v2/${capitalizedModId}/master/update.json"
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(16)
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 archivesBaseName = modId
 group = "${author}.${archivesBaseName}"
