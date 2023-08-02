@@ -7,7 +7,7 @@ import groovy.json.JsonSlurper
 buildscript {
     repositories {
         maven {
-            url = 'https://files.minecraftforge.net/maven'
+            url = 'https://maven.minecraftforge.net'
         }
         maven {
             url = 'https://plugins.gradle.org/m2'
