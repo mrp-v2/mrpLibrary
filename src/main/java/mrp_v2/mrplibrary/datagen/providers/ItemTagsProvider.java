@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 
 public abstract class ItemTagsProvider extends net.minecraft.data.tags.ItemTagsProvider implements IModLocProvider
 {
-    protected ItemTagsProvider(DataGenerator dataGenerator, BlockTagsProvider blockTagProvider, String modId,
+    protected ItemTagsProvider(DataGenerator dataGenerator, net.minecraft.data.tags.BlockTagsProvider blockTagProvider, String modId,
             @Nullable ExistingFileHelper existingFileHelper)
     {
         super(dataGenerator, blockTagProvider, modId, existingFileHelper);
