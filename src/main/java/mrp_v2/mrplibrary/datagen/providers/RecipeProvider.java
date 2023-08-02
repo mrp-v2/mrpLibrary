@@ -17,7 +17,7 @@ public abstract class RecipeProvider extends net.minecraft.data.recipes.RecipePr
     }
 
     @Override
-    protected abstract void buildShapelessRecipes(Consumer<FinishedRecipe> consumer);
+    protected abstract void buildCraftingRecipes(Consumer<FinishedRecipe> consumer);
 
     @Override public String getName()
     {
