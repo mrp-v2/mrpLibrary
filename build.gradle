@@ -47,6 +47,8 @@ String homepageURL = "https://www.curseforge.com/minecraft/mc-mods/${modDisplayN
 String issuesURL = "${homepageURL}/issues"
 String updateURL = "https://raw.githubusercontent.com/mrp-v2/${capitalizedModId}/master/update.json"
 
+java.toolchain.languageVersion = JavaLanguageVersion.of(16)
+
 archivesBaseName = modId
 group = "${author}.${archivesBaseName}"
 boolean usesMixins = file("src/main/resources/${modId}.mixins.json").exists()

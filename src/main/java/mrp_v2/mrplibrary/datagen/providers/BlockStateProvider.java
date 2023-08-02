@@ -2,16 +2,10 @@ package mrp_v2.mrplibrary.datagen.providers;
 
 import mrp_v2.mrplibrary.datagen.TintedBlockStateGenerator;
 import mrp_v2.mrplibrary.util.IModLocProvider;
-import net.minecraft.block.Block;
-import net.minecraft.block.FenceBlock;
-import net.minecraft.block.FenceGateBlock;
-import net.minecraft.block.RotatedPillarBlock;
-import net.minecraft.block.SlabBlock;
-import net.minecraft.block.StairsBlock;
-import net.minecraft.block.WallBlock;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.resources.ResourcePackType;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.world.level.block.*;
 import net.minecraftforge.client.model.generators.ModelBuilder;
 import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraftforge.common.data.ExistingFileHelper;
@@ -52,7 +46,7 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
 
     public void promiseGeneration(ResourceLocation model)
     {
-        models().existingFileHelper.trackGenerated(model, ResourcePackType.CLIENT_RESOURCES, ".json", "models");
+        models().existingFileHelper.trackGenerated(model, PackType.CLIENT_RESOURCES, ".json", "models");
     }
 
     public void simpleBlockTinted(Block block)
@@ -122,18 +116,18 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
                 .texture(FRONT, front).texture(TOP, top);
     }
 
-    public void stairsBlockTinted(StairsBlock block, ResourceLocation texture)
+    public void stairsBlockTinted(StairBlock block, ResourceLocation texture)
     {
         stairsBlockTinted(block, texture, texture, texture);
     }
 
-    public void stairsBlockTinted(StairsBlock block, ResourceLocation side, ResourceLocation bottom,
+    public void stairsBlockTinted(StairBlock block, ResourceLocation side, ResourceLocation bottom,
             ResourceLocation top)
     {
         stairsBlockInternalTinted(block, block.getRegistryName().toString(), side, bottom, top);
     }
 
-    protected void stairsBlockInternalTinted(StairsBlock block, String baseName, ResourceLocation side,
+    protected void stairsBlockInternalTinted(StairBlock block, String baseName, ResourceLocation side,
             ResourceLocation bottom, ResourceLocation top)
     {
         StairsBlockModels models = stairsBlockTinted(baseName, side, bottom, top);
@@ -154,12 +148,12 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
         return models().withExistingParent(name, parent).texture(SIDE, side).texture(BOTTOM, bottom).texture(TOP, top);
     }
 
-    public void stairsBlockTinted(StairsBlock block, String name, ResourceLocation texture)
+    public void stairsBlockTinted(StairBlock block, String name, ResourceLocation texture)
     {
         stairsBlockTinted(block, name, texture, texture, texture);
     }
 
-    public void stairsBlockTinted(StairsBlock block, String name, ResourceLocation side, ResourceLocation bottom,
+    public void stairsBlockTinted(StairBlock block, String name, ResourceLocation side, ResourceLocation bottom,
             ResourceLocation top)
     {
         stairsBlockInternalTinted(block, name + "_stairs", side, bottom, top);

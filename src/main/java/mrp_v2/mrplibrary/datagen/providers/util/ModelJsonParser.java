@@ -5,10 +5,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.resources.IResource;
-import net.minecraft.resources.ResourcePackType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraftforge.client.model.generators.BlockModelBuilder;
 import net.minecraftforge.client.model.generators.BlockModelProvider;
 import net.minecraftforge.client.model.generators.ModelBuilder;
@@ -31,12 +31,12 @@ public class ModelJsonParser
     @Nullable public ModelBuilder<BlockModelBuilder> buildBlockModel(ResourceLocation model, ResourceLocation newModel)
     {
         model = new ResourceLocation(model.getNamespace(), "models/block/" + model.getPath() + ".json");
-        Preconditions.checkArgument(models.existingFileHelper.exists(model, ResourcePackType.CLIENT_RESOURCES),
+        Preconditions.checkArgument(models.existingFileHelper.exists(model, PackType.CLIENT_RESOURCES),
                 "Model %s does not exist in any known resource pack", model);
         JsonElement json;
         try
         {
-            IResource resource = models.existingFileHelper.getResource(model, ResourcePackType.CLIENT_RESOURCES);
+            Resource resource = models.existingFileHelper.getResource(model, PackType.CLIENT_RESOURCES);
             json = PARSER.parse(new InputStreamReader(resource.getInputStream()));
         } catch (IOException e)
         {

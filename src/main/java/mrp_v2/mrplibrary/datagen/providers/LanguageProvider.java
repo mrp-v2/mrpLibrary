@@ -1,10 +1,10 @@
 package mrp_v2.mrplibrary.datagen.providers;
 
 import mrp_v2.mrplibrary.util.IModLocProvider;
-import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.item.CreativeModeTab;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -25,10 +25,10 @@ public abstract class LanguageProvider extends net.minecraftforge.common.data.La
     }
 
     @Deprecated // TODO remove in next API change
-    public static TranslationTextComponent makeTextTranslation(String prefix, String modId, String suffix,
+    public static TranslatableComponent makeTextTranslation(String prefix, String modId, String suffix,
             String locale, String name)
     {
-        return new TranslationTextComponent(makeStringTranslation(prefix, modId, suffix, locale, name));
+        return new TranslatableComponent(makeStringTranslation(prefix, modId, suffix, locale, name));
     }
 
     @Deprecated // TODO remove in next API change
@@ -38,11 +38,11 @@ public abstract class LanguageProvider extends net.minecraftforge.common.data.La
     }
 
     @Deprecated // TODO remove in next API change
-    public static Function<Object[], TranslationTextComponent> makeFormattedTextTranslation(String prefix, String modId,
+    public static Function<Object[], TranslatableComponent> makeFormattedTextTranslation(String prefix, String modId,
             String suffix, String locale, String name)
     {
         String unformattedName = makeStringTranslation(prefix, modId, suffix, locale, name);
-        return (Object[] args) -> new TranslationTextComponent(unformattedName, args);
+        return (Object[] args) -> new TranslatableComponent(unformattedName, args);
     }
 
     // TODO make abstract in next API change
@@ -60,10 +60,10 @@ public abstract class LanguageProvider extends net.minecraftforge.common.data.La
         return modid;
     }
 
-    public void add(ItemGroup key, String name)
+    public void add(CreativeModeTab key, String name)
     {
-        TranslationTextComponent test = key.getDisplayName() instanceof TranslationTextComponent ?
-                (TranslationTextComponent) key.getDisplayName() : null;
+        TranslatableComponent test = key.getDisplayName() instanceof TranslatableComponent ?
+                (TranslatableComponent) key.getDisplayName() : null;
         if (test != null)
         {
             add(test.getKey(), name);
@@ -74,18 +74,18 @@ public abstract class LanguageProvider extends net.minecraftforge.common.data.La
         }
     }
 
-    public void add(KeyBinding keybind, String description, String category)
+    public void add(KeyMapping keybind, String description, String category)
     {
         add(keybind, description);
         add(keybind.getCategory(), category);
     }
 
-    public void add(KeyBinding keybind, String description)
+    public void add(KeyMapping keybind, String description)
     {
         add(keybind.getName(), description);
     }
 
-    public void add(TranslationTextComponent key, String name)
+    public void add(TranslatableComponent key, String name)
     {
         add(key.getKey(), name);
     }

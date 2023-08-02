@@ -1,12 +1,12 @@
 package mrp_v2.mrplibrary.datagen;
 
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class BlockLootTables extends net.minecraft.data.loot.BlockLootTables
+public class BlockLootTables extends net.minecraft.data.loot.BlockLoot
 {
     private final IdentityHashMap<Block, Consumer<Block>> knownBlocks;
 

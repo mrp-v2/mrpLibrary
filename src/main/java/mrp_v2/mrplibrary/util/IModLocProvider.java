@@ -1,6 +1,6 @@
 package mrp_v2.mrplibrary.util;
 
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 public interface IModLocProvider
 {

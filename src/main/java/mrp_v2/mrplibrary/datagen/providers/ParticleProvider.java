@@ -6,9 +6,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import mrp_v2.mrplibrary.util.IModLocProvider;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DirectoryCache;
-import net.minecraft.data.IDataProvider;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.data.DataProvider;
+import net.minecraft.data.HashCache;
+import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public abstract class ParticleProvider implements IDataProvider, IModLocProvider
+public abstract class ParticleProvider implements DataProvider, IModLocProvider
 {
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Logger LOGGER = LogManager.getLogger();
@@ -44,7 +44,8 @@ public abstract class ParticleProvider implements IDataProvider, IModLocProvider
         return modId;
     }
 
-    @Override public void run(DirectoryCache cache) throws IOException
+    @Override
+    public void run(HashCache cache) throws IOException
     {
         Path path = generator.getOutputFolder();
         Set<ResourceLocation> locationSet = new HashSet<>();
@@ -69,7 +70,7 @@ public abstract class ParticleProvider implements IDataProvider, IModLocProvider
         return "Particles: " + modId;
     }
 
-    private void saveParticle(DirectoryCache cache, JsonObject particle, Path path)
+    private void saveParticle(HashCache cache, JsonObject particle, Path path)
     {
         try
         {

@@ -2,11 +2,11 @@ package mrp_v2.mrplibrary.datagen.providers;
 
 import mrp_v2.mrplibrary.util.IModLocProvider;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.IFinishedRecipe;
+import net.minecraft.data.recipes.FinishedRecipe;
 
 import java.util.function.Consumer;
 
-public abstract class RecipeProvider extends net.minecraft.data.RecipeProvider implements IModLocProvider
+public abstract class RecipeProvider extends net.minecraft.data.recipes.RecipeProvider implements IModLocProvider
 {
     private final String modId;
 
@@ -16,7 +16,8 @@ public abstract class RecipeProvider extends net.minecraft.data.RecipeProvider i
         this.modId = modId;
     }
 
-    @Override protected abstract void buildShapelessRecipes(Consumer<IFinishedRecipe> consumer);
+    @Override
+    protected abstract void buildShapelessRecipes(Consumer<FinishedRecipe> consumer);
 
     @Override public String getName()
     {

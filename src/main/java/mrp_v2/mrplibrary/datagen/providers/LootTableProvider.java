@@ -5,8 +5,12 @@ import com.mojang.datafixers.util.Pair;
 import mrp_v2.mrplibrary.datagen.BlockLootTables;
 import mrp_v2.mrplibrary.util.IModLocProvider;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.loot.*;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.loot.LootTable;
+import net.minecraft.loot.LootTables;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.storage.loot.ValidationContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 
 import java.util.List;
 import java.util.Map;
@@ -14,9 +18,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class LootTableProvider extends net.minecraft.data.LootTableProvider implements IModLocProvider
+public class LootTableProvider extends net.minecraft.data.loot.LootTableProvider implements IModLocProvider
 {
-    private final List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootParameterSet>>
+    private final List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootContextParamSet>>
             lootTables;
     private final String modId;
 
@@ -29,19 +33,20 @@ public class LootTableProvider extends net.minecraft.data.LootTableProvider impl
             Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>> lootTablesProvider, String modId)
     {
         super(dataGeneratorIn);
-        lootTables = ImmutableList.of(Pair.of(lootTablesProvider, LootParameterSets.BLOCK));
+        lootTables = ImmutableList.of(Pair.of(lootTablesProvider, LootContextParamSets.BLOCK));
         this.modId = modId;
     }
 
     @Override
-    protected List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootParameterSet>> getTables()
+    protected List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootContextParamSet>> getTables()
     {
         return lootTables;
     }
 
-    @Override protected void validate(Map<ResourceLocation, LootTable> map, ValidationTracker validationtracker)
+    @Override
+    protected void validate(Map<ResourceLocation, LootTable> map, ValidationContext validationtracker)
     {
-        map.forEach((resourceLocation, lootTable) -> LootTableManager
+        map.forEach((resourceLocation, lootTable) -> LootTables
                 .validate(validationtracker, resourceLocation, lootTable));
     }
 

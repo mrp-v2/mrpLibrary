@@ -4,8 +4,8 @@ import com.mojang.datafixers.util.Function3;
 import com.mojang.datafixers.util.Function4;
 import mrp_v2.mrplibrary.datagen.providers.*;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.loot.LootTable;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
@@ -22,7 +22,7 @@ public class DataGeneratorHelper
     private final DataGenerator dataGenerator;
     private final String modId;
     private final ExistingFileHelper existingFileHelper;
-    private final net.minecraft.data.BlockTagsProvider blockTagsProvider;
+    private final net.minecraft.data.tags.BlockTagsProvider blockTagsProvider;
     private final boolean includeClient;
     private final boolean includeServer;
 
@@ -32,7 +32,7 @@ public class DataGeneratorHelper
         this.modId = modId;
         this.existingFileHelper = event.getExistingFileHelper();
         this.blockTagsProvider =
-                new net.minecraft.data.BlockTagsProvider(this.dataGenerator, this.modId, this.existingFileHelper);
+                new net.minecraft.data.tags.BlockTagsProvider(this.dataGenerator, this.modId, this.existingFileHelper);
         includeClient = event.includeClient();
         includeServer = event.includeServer();
     }
@@ -84,7 +84,7 @@ public class DataGeneratorHelper
     }
 
     public void addItemTagsProvider(
-            Function4<DataGenerator, net.minecraft.data.BlockTagsProvider, String, ExistingFileHelper, ? extends ItemTagsProvider> itemTagsProviderConstructor)
+            Function4<DataGenerator, net.minecraft.data.tags.BlockTagsProvider, String, ExistingFileHelper, ? extends ItemTagsProvider> itemTagsProviderConstructor)
     {
         if (includeServer)
         {

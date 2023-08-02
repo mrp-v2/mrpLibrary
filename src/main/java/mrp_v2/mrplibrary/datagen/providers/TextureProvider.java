@@ -5,12 +5,12 @@ import com.google.common.hash.Hasher;
 import com.google.gson.*;
 import mrp_v2.mrplibrary.util.IModLocProvider;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DirectoryCache;
-import net.minecraft.data.IDataProvider;
-import net.minecraft.resources.IResource;
-import net.minecraft.resources.ResourcePackType;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.data.DataProvider;
+import net.minecraft.data.HashCache;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.util.GsonHelper;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class TextureProvider implements IDataProvider, IModLocProvider
+public abstract class TextureProvider implements DataProvider, IModLocProvider
 {
     private static final Logger LOGGER = LogManager.getLogger();
     public static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -224,7 +224,8 @@ public abstract class TextureProvider implements IDataProvider, IModLocProvider
         return modId;
     }
 
-    @Override public void run(DirectoryCache cache)
+    @Override
+    public void run(HashCache cache)
     {
         addTextures(new FinishedTextureConsumer()
         {
@@ -260,7 +261,7 @@ public abstract class TextureProvider implements IDataProvider, IModLocProvider
 
     protected abstract void addTextures(FinishedTextureConsumer consumer);
 
-    protected void saveTextureMeta(DirectoryCache cache, TextureMetaBuilder metaBuilder, Path path)
+    protected void saveTextureMeta(HashCache cache, TextureMetaBuilder metaBuilder, Path path)
     {
         String json = GSON.toJson(metaBuilder.toJson());
         String hash = SHA1.hashUnencodedChars(json).toString();
@@ -290,7 +291,7 @@ public abstract class TextureProvider implements IDataProvider, IModLocProvider
                 .resolve("assets/" + texture.getNamespace() + "/textures/" + texture.getPath() + ".png");
     }
 
-    protected void saveTexture(DirectoryCache cache, BufferedImage texture, Path path)
+    protected void saveTexture(HashCache cache, BufferedImage texture, Path path)
     {
         Hasher hasher = SHA1.newHasher();
         for (int i : texture.getRGB(0, 0, texture.getWidth(), texture.getHeight(), null, 0, texture.getWidth()))
@@ -350,11 +351,11 @@ public abstract class TextureProvider implements IDataProvider, IModLocProvider
         }
         ResourceLocation loc =
                 new ResourceLocation(textureLoc.getNamespace(), "textures/" + textureLoc.getPath() + ".png.mcmeta");
-        if (existingFileHelper.exists(loc, ResourcePackType.CLIENT_RESOURCES))
+        if (existingFileHelper.exists(loc, PackType.CLIENT_RESOURCES))
         {
             try
             {
-                IResource resource = existingFileHelper.getResource(loc, ResourcePackType.CLIENT_RESOURCES);
+                Resource resource = existingFileHelper.getResource(loc, PackType.CLIENT_RESOURCES);
                 return Optional.of(TextureMetaBuilder.fromInputStream(resource.getInputStream()));
             } catch (IOException ioException)
             {
@@ -372,11 +373,11 @@ public abstract class TextureProvider implements IDataProvider, IModLocProvider
         }
         ResourceLocation loc =
                 new ResourceLocation(textureLoc.getNamespace(), "textures/" + textureLoc.getPath() + ".png");
-        Preconditions.checkArgument(existingFileHelper.exists(loc, ResourcePackType.CLIENT_RESOURCES),
+        Preconditions.checkArgument(existingFileHelper.exists(loc, PackType.CLIENT_RESOURCES),
                 "Texture %s does not exist in any known resource pack", loc);
         try
         {
-            IResource resource = existingFileHelper.getResource(loc, ResourcePackType.CLIENT_RESOURCES);
+            Resource resource = existingFileHelper.getResource(loc, PackType.CLIENT_RESOURCES);
             return ImageIO.read(resource.getInputStream());
         } catch (IOException ioException)
         {
@@ -386,7 +387,7 @@ public abstract class TextureProvider implements IDataProvider, IModLocProvider
 
     public void promiseGeneration(ResourceLocation texture)
     {
-        this.existingFileHelper.trackGenerated(texture, ResourcePackType.CLIENT_RESOURCES, ".png", "textures");
+        this.existingFileHelper.trackGenerated(texture, PackType.CLIENT_RESOURCES, ".png", "textures");
     }
 
     public static class Texture
@@ -441,8 +442,8 @@ public abstract class TextureProvider implements IDataProvider, IModLocProvider
         {
             BufferedReader bufferedReader =
                     new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-            JsonObject json = JSONUtils
-                    .convertToJsonObject(JSONUtils.fromJson(GSON, bufferedReader, JsonElement.class), "top element");
+            JsonObject json = GsonHelper
+                    .convertToJsonObject(GsonHelper.fromJson(GSON, bufferedReader, JsonElement.class), "top element");
             if (json.has("animation"))
             {
                 JsonObject animationJson = json.getAsJsonObject("animation");
