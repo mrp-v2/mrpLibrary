@@ -2,75 +2,47 @@ package mrp_v2.mrplibrary.datagen.providers;
 
 import mrp_v2.mrplibrary.util.IModLocProvider;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.data.PackOutput;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.item.CreativeModeTab;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.function.Function;
 
 public abstract class LanguageProvider extends net.minecraftforge.common.data.LanguageProvider
         implements IModLocProvider
 {
     private static final Logger LOGGER = LogManager.getLogger();
-    protected final String modid;
+    protected final String modId;
     protected final String locale;
 
-    public LanguageProvider(DataGenerator gen, String modid, String locale)
+    public LanguageProvider(PackOutput output, String modId, String locale)
     {
-        super(gen, modid, locale);
-        this.modid = modid;
+        super(output, modId, locale);
+        this.modId = modId;
         this.locale = locale;
     }
 
-    @Deprecated // TODO remove in next API change
-    public static TranslatableComponent makeTextTranslation(String prefix, String modId, String suffix,
-            String locale, String name)
-    {
-        return new TranslatableComponent(makeStringTranslation(prefix, modId, suffix, locale, name));
-    }
-
-    @Deprecated // TODO remove in next API change
-    public static String makeStringTranslation(String prefix, String modId, String suffix, String locale, String name)
-    {
-        return prefix + modId + suffix;
-    }
-
-    @Deprecated // TODO remove in next API change
-    public static Function<Object[], TranslatableComponent> makeFormattedTextTranslation(String prefix, String modId,
-            String suffix, String locale, String name)
-    {
-        String unformattedName = makeStringTranslation(prefix, modId, suffix, locale, name);
-        return (Object[] args) -> new TranslatableComponent(unformattedName, args);
-    }
-
-    // TODO make abstract in next API change
-    @Override protected void addTranslations()
-    {
-    }
+    @Override
+    protected abstract void addTranslations();
 
     @Override public String getName()
     {
-        return super.getName() + " " + modid;
+        return super.getName() + " " + modId;
     }
 
     @Override public String getModId()
     {
-        return modid;
+        return modId;
     }
 
     public void add(CreativeModeTab key, String name)
     {
-        TranslatableComponent test = key.getDisplayName() instanceof TranslatableComponent ?
-                (TranslatableComponent) key.getDisplayName() : null;
-        if (test != null)
+        if (key.getDisplayName().getContents() instanceof TranslatableContents test)
         {
             add(test.getKey(), name);
         } else
         {
-            LOGGER.warn("Could not make a translation for " + key +
-                    " because its groupName is not a TranslationTextComponent!");
+            LOGGER.warn("Could not make a translation for " + key + " because its groupName is not a TranslationTextComponent!");
         }
     }
 
@@ -85,7 +57,7 @@ public abstract class LanguageProvider extends net.minecraftforge.common.data.La
         add(keybind.getName(), description);
     }
 
-    public void add(TranslatableComponent key, String name)
+    public void add(TranslatableContents key, String name)
     {
         add(key.getKey(), name);
     }

@@ -2,13 +2,14 @@ package mrp_v2.mrplibrary.datagen.providers;
 
 import mrp_v2.mrplibrary.datagen.TintedBlockStateGenerator;
 import mrp_v2.mrplibrary.util.IModLocProvider;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.level.block.*;
 import net.minecraftforge.client.model.generators.ModelBuilder;
 import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.function.Consumer;
 
@@ -23,10 +24,10 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
     public static final String BOTTOM = "bottom";
     private final String modId;
 
-    public BlockStateProvider(DataGenerator gen, String modid, ExistingFileHelper exFileHelper)
+    public BlockStateProvider(PackOutput output, String modId, ExistingFileHelper exFileHelper)
     {
-        super(gen, modid, exFileHelper);
-        this.modId = modid;
+        super(output, modId, exFileHelper);
+        this.modId = modId;
     }
 
     @Override public String getModId()
@@ -60,9 +61,23 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
                 .texture(ALL, blockTexture(block));
     }
 
+    public void cubeBottomTopTinted(Block block) {
+        ResourceLocation base = blockTexture(block);
+        cubeBottomTopTinted(block, extend(base, SIDE), extend(base, TOP), extend(base, BOTTOM));
+    }
+
+    public ModelFile cubeBottomTopTinted(Block block, ResourceLocation side, ResourceLocation top, ResourceLocation bottom) {
+        return models().withExistingParent(name(block), TintedBlockStateGenerator.CUBE_BOTTOM_TOP_TINTED)
+                .texture(SIDE, side).texture(TOP, top).texture(BOTTOM, bottom);
+    }
+
+    protected ResourceLocation key(Block block) {
+        return ForgeRegistries.BLOCKS.getKey(block);
+    }
+
     protected String name(Block block)
     {
-        return block.getRegistryName().getPath();
+        return key(block).getPath();
     }
 
     public ModelFile cubeAllTinted(String name, ResourceLocation texture)
@@ -77,12 +92,12 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
 
     public void axisBlockTinted(RotatedPillarBlock block, ResourceLocation baseName)
     {
-        axisBlockTinted(block, extend(baseName, "_side"), extend(baseName, "_end"));
+        axisBlockTinted(block, extend(baseName, SIDE), extend(baseName, END));
     }
 
     protected ResourceLocation extend(ResourceLocation rl, String suffix)
     {
-        return new ResourceLocation(rl.getNamespace(), rl.getPath() + suffix);
+        return new ResourceLocation(rl.getNamespace(), rl.getPath() + "_" + suffix);
     }
 
     public void axisBlockTinted(RotatedPillarBlock block, ResourceLocation side, ResourceLocation end)
@@ -101,7 +116,7 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
 
     public void logBlockTinted(RotatedPillarBlock block)
     {
-        axisBlockTinted(block, blockTexture(block), extend(blockTexture(block), "_top"));
+        axisBlockTinted(block, blockTexture(block), extend(blockTexture(block), TOP));
     }
 
     public void horizontalBlockTinted(Block block, ResourceLocation side, ResourceLocation front, ResourceLocation top)
@@ -124,7 +139,7 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
     public void stairsBlockTinted(StairBlock block, ResourceLocation side, ResourceLocation bottom,
             ResourceLocation top)
     {
-        stairsBlockInternalTinted(block, block.getRegistryName().toString(), side, bottom, top);
+        stairsBlockInternalTinted(block, key(block).toString(), side, bottom, top);
     }
 
     protected void stairsBlockInternalTinted(StairBlock block, String baseName, ResourceLocation side,
@@ -181,7 +196,7 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
 
     public void fenceBlockTinted(FenceBlock block, ResourceLocation texture)
     {
-        FenceBlockModels models = fenceBlockTinted(block.getRegistryName().toString(), texture);
+        FenceBlockModels models = fenceBlockTinted(key(block).toString(), texture);
         fourWayBlock(block, models.getFencePost(), models.getFenceSide());
     }
 
@@ -201,7 +216,7 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
 
     public void fenceGateBlockTinted(FenceGateBlock block, ResourceLocation texture)
     {
-        fenceGateBlockInternalTinted(block, block.getRegistryName().toString(), texture);
+        fenceGateBlockInternalTinted(block, key(block).toString(), texture);
     }
 
     protected void fenceGateBlockInternalTinted(FenceGateBlock block, String baseName, ResourceLocation texture)
@@ -227,7 +242,7 @@ public abstract class BlockStateProvider extends net.minecraftforge.client.model
 
     public void wallBlockTinted(WallBlock block, ResourceLocation texture)
     {
-        wallBlockInternalTinted(block, block.getRegistryName().toString(), texture);
+        wallBlockInternalTinted(block, key(block).toString(), texture);
     }
 
     protected void wallBlockInternalTinted(WallBlock block, String baseName, ResourceLocation texture)

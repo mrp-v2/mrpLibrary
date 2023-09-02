@@ -2,12 +2,10 @@ package mrp_v2.mrplibrary.datagen;
 
 import mrp_v2.mrplibrary.MrpLibrary;
 import mrp_v2.mrplibrary.datagen.providers.BlockStateProvider;
-import mrp_v2.mrplibrary.datagen.providers.ItemModelProvider;
 import mrp_v2.mrplibrary.datagen.providers.util.ModelJsonParser;
 import net.minecraft.core.Direction;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.model.generators.BlockModelBuilder;
 import net.minecraftforge.client.model.generators.ModelBuilder;
 import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraftforge.common.data.ExistingFileHelper;
@@ -18,21 +16,7 @@ import java.util.HashMap;
 
 public class TintedBlockStateGenerator extends BlockStateProvider
 {
-    // TODO next api change, match tinted names to vanilla names
-    // TODO also remove these:
-    @Deprecated public static final String SUBSTITUTE = "#";
-    @Deprecated public static final String PARTICLE = "particle";
-    @Deprecated public static final String BOTTOM_BASE = BlockStateProvider.BOTTOM;
-    @Deprecated public static final String BOTTOM = SUBSTITUTE + BOTTOM_BASE;
-    @Deprecated public static final String TOP = SUBSTITUTE + BlockStateProvider.TOP;
-    @Deprecated public static final String SIDE = SUBSTITUTE + BlockStateProvider.SIDE;
-    @Deprecated public static final String END = SUBSTITUTE + BlockStateProvider.END;
-    @Deprecated public static final String FRONT = SUBSTITUTE + BlockStateProvider.FRONT;
-    @Deprecated public static final String WALL = SUBSTITUTE + ItemModelProvider.WALL;
-    @Deprecated public static final String TEXTURE = SUBSTITUTE + ItemModelProvider.TEXTURE;
-    @Deprecated public static final String ALL = SUBSTITUTE + BlockStateProvider.ALL;
-    @Deprecated public static final ResourceLocation BASE_BLOCK = new ResourceLocation("block/block");
-    @Deprecated public static final ResourceLocation CUBE_TINTED = makeTintedBlockLoc("cube");
+    public static final ResourceLocation CUBE_TINTED = makeTintedBlockLoc("cube");
     public static final ResourceLocation CUBE_ALL_TINTED = makeTintedBlockLoc("cube_all");
     public static final ResourceLocation CUBE_BOTTOM_TOP_TINTED = makeTintedBlockLoc("cube_bottom_top");
     public static final ResourceLocation CUBE_COLUMN_TINTED = makeTintedBlockLoc("cube_column");
@@ -86,7 +70,7 @@ public class TintedBlockStateGenerator extends BlockStateProvider
 
     public final ModelJsonParser parser;
 
-    public TintedBlockStateGenerator(DataGenerator gen, String modid, ExistingFileHelper exFileHelper)
+    public TintedBlockStateGenerator(PackOutput gen, String modid, ExistingFileHelper exFileHelper)
     {
         super(gen, modid, exFileHelper);
         parser = new ModelJsonParser(models());
@@ -94,7 +78,7 @@ public class TintedBlockStateGenerator extends BlockStateProvider
 
     private static ResourceLocation makeTintedBlockLoc(String loc)
     {
-        return makeBlockLoc(loc + "_tinted");
+        return makeBlockLoc("tinted/" + loc);
     }
 
     private static ResourceLocation makeBlockLoc(String loc)
@@ -208,96 +192,5 @@ public class TintedBlockStateGenerator extends BlockStateProvider
         forEachElement(parser.buildBlockModel(mcLoc("stairs"), STAIRS_TINTED), this::addTintsToElement);
         forEachElement(parser.buildBlockModel(mcLoc("inner_stairs"), STAIRS_INNER_TINTED), this::addTintsToElement);
         forEachElement(parser.buildBlockModel(mcLoc("outer_stairs"), STAIRS_OUTER_TINTED), this::addTintsToElement);
-    }
-
-    // TODO remove in next API change
-    @Deprecated public static class Util
-    {
-        @Deprecated
-        public static void fenceGateElements(ModelBuilder<BlockModelBuilder> builder, boolean isOpen, Wall wall)
-        {
-        }
-
-        @Deprecated
-        public static void setUvs(ModelBuilder<BlockModelBuilder>.ElementBuilder builder, float u1, float v1, float u2,
-                float v2, Direction... directions)
-        {
-            for (Direction direction : directions)
-            {
-                builder.face(direction).uvs(u1, v1, u2, v2);
-            }
-        }
-
-        @Deprecated public static void textureFunction(Direction direction,
-                ModelBuilder<BlockModelBuilder>.ElementBuilder.FaceBuilder faceBuilder)
-        {
-            faceBuilder.texture(TEXTURE);
-        }
-
-        @Deprecated
-        public static void setUvs(ModelBuilder<BlockModelBuilder>.ElementBuilder builder, float u1t, float u1f, float v1t, float v1f, float u2t, float u2f, float v2t, float v2f, boolean condition,
-                Direction... directions)
-        {
-            for (Direction direction : directions)
-            {
-                if (condition)
-                {
-                    builder.face(direction).uvs(u1t, v1t, u2t, v2t);
-                } else
-                {
-                    builder.face(direction).uvs(u1f, v1f, u2f, v2f);
-                }
-            }
-        }
-
-        @Deprecated
-        public static void setUvs(ModelBuilder<BlockModelBuilder>.ElementBuilder builder, float u1t, float u1f, float v1, float u2t, float u2f, float v2, boolean condition, Direction... directions)
-        {
-            for (Direction direction : directions)
-            {
-                if (condition)
-                {
-                    builder.face(direction).uvs(u1t, v1, u2t, v2);
-                } else
-                {
-                    builder.face(direction).uvs(u1f, v1, u2f, v2);
-                }
-            }
-        }
-
-        @Deprecated
-        public static void setUvs(ModelBuilder<BlockModelBuilder>.ElementBuilder builder, float u1t, float u1f, float v1, float u2t, float u2f, float v2, boolean condition)
-        {
-            builder.faces((direction, faceBuilder) ->
-            {
-                if (condition)
-                {
-                    faceBuilder.uvs(u1t, v1, u2t, v2);
-                } else
-                {
-                    faceBuilder.uvs(u1f, v1, u2f, v2);
-                }
-            });
-        }
-
-        @Deprecated public static float applyWall(float base, boolean isWall)
-        {
-            return isWall ? base - 3.0F : base;
-        }
-
-        @Deprecated public static class Wall
-        {
-            private final boolean isWall;
-
-            @Deprecated public Wall(boolean isWall)
-            {
-                this.isWall = isWall;
-            }
-
-            @Deprecated public float apply(float f)
-            {
-                return applyWall(f, isWall);
-            }
-        }
     }
 }

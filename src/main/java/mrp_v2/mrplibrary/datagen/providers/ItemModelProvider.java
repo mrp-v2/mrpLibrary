@@ -2,7 +2,7 @@ package mrp_v2.mrplibrary.datagen.providers;
 
 import mrp_v2.mrplibrary.datagen.TintedBlockStateGenerator;
 import mrp_v2.mrplibrary.util.IModLocProvider;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.generators.ItemModelBuilder;
 import net.minecraftforge.common.data.ExistingFileHelper;
@@ -13,9 +13,9 @@ public abstract class ItemModelProvider extends net.minecraftforge.client.model.
     public static final String TEXTURE = "texture";
     public static final String WALL = "wall";
 
-    public ItemModelProvider(DataGenerator generator, String modid, ExistingFileHelper existingFileHelper)
+    public ItemModelProvider(PackOutput output, String modid, ExistingFileHelper existingFileHelper)
     {
-        super(generator, modid, existingFileHelper);
+        super(output, modid, existingFileHelper);
     }
 
     public ItemModelBuilder fenceInventoryTinted(String name, ResourceLocation texture)

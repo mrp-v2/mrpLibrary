@@ -1,35 +1,18 @@
 package mrp_v2.mrplibrary.datagen;
 
+import net.minecraft.data.loot.BlockLootSubProvider;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.function.Consumer;
+import java.util.Set;
 
-public class BlockLootTables extends net.minecraft.data.loot.BlockLoot
-{
-    private final IdentityHashMap<Block, Consumer<Block>> knownBlocks;
-
-    public BlockLootTables()
+public abstract class BlockLootTables extends BlockLootSubProvider {
+    public BlockLootTables(Set<Item> explosionResistant, FeatureFlagSet enabledFeatures)
     {
-        this.knownBlocks = new IdentityHashMap<>();
+        super(explosionResistant, enabledFeatures);
     }
 
-    public final void addLootTable(Block block, Consumer<Block> lootTableFunction)
-    {
-        this.knownBlocks.put(block, lootTableFunction);
-    }
-
-    @Override protected final void addTables()
-    {
-        for (Map.Entry<Block, Consumer<Block>> entry : this.knownBlocks.entrySet())
-        {
-            entry.getValue().accept(entry.getKey());
-        }
-    }
-
-    @Override protected final Iterable<Block> getKnownBlocks()
-    {
-        return this.knownBlocks.keySet();
-    }
+    @Override
+    protected abstract Iterable<Block> getKnownBlocks();
 }

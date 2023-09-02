@@ -9,12 +9,14 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraftforge.client.model.generators.BlockModelBuilder;
 import net.minecraftforge.client.model.generators.BlockModelProvider;
 import net.minecraftforge.client.model.generators.ModelBuilder;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
 
@@ -37,7 +39,11 @@ public class ModelJsonParser
         try
         {
             Resource resource = models.existingFileHelper.getResource(model, PackType.CLIENT_RESOURCES);
-            json = PARSER.parse(new InputStreamReader(resource.getInputStream()));
+            InputStream stream = resource.open();
+            InputStreamReader reader = new InputStreamReader(stream);
+            json = PARSER.parse(reader);
+            reader.close();
+            stream.close();
         } catch (IOException e)
         {
             throw new RuntimeException(String.format("Error while reading model %s", model), e);
@@ -81,33 +87,17 @@ public class ModelJsonParser
     {
         for (Map.Entry<String, JsonElement> entry : displayJson.entrySet())
         {
-            ModelBuilder.Perspective perspective = null;
-            switch (entry.getKey())
-            {
-                case "thirdperson_righthand":
-                    perspective = ModelBuilder.Perspective.THIRDPERSON_RIGHT;
-                    break;
-                case "thirdperson_lefthand":
-                    perspective = ModelBuilder.Perspective.THIRDPERSON_LEFT;
-                    break;
-                case "firstperson_righthand":
-                    perspective = ModelBuilder.Perspective.FIRSTPERSON_RIGHT;
-                    break;
-                case "firstperson_lefthand":
-                    perspective = ModelBuilder.Perspective.FIRSTPERSON_LEFT;
-                    break;
-                case "head":
-                    perspective = ModelBuilder.Perspective.HEAD;
-                    break;
-                case "gui":
-                    perspective = ModelBuilder.Perspective.GUI;
-                    break;
-                case "ground":
-                    perspective = ModelBuilder.Perspective.GROUND;
-                    break;
-                case "fixed":
-                    perspective = ModelBuilder.Perspective.FIXED;
-            }
+            ItemDisplayContext perspective = switch (entry.getKey()) {
+                case "thirdperson_righthand" -> ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
+                case "thirdperson_lefthand" -> ItemDisplayContext.THIRD_PERSON_LEFT_HAND;
+                case "firstperson_righthand" -> ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
+                case "firstperson_lefthand" -> ItemDisplayContext.FIRST_PERSON_LEFT_HAND;
+                case "head" -> ItemDisplayContext.HEAD;
+                case "gui" -> ItemDisplayContext.GUI;
+                case "ground" -> ItemDisplayContext.GROUND;
+                case "fixed" -> ItemDisplayContext.FIXED;
+                default -> null;
+            };
             consumeDisplayTransformJson(modelDisplayBuilder.transform(perspective), entry.getValue().getAsJsonObject());
         }
     }
@@ -119,20 +109,16 @@ public class ModelJsonParser
         for (Map.Entry<String, JsonElement> entry : displayTransformJson.entrySet())
         {
             JsonArray jsonArray = entry.getValue().getAsJsonArray();
-            switch (entry.getKey())
-            {
-                case "rotation":
-                    modelDisplayTransformBuilder.rotation(jsonArray.get(0).getAsFloat(), jsonArray.get(1).getAsFloat(),
-                            jsonArray.get(2).getAsFloat());
-                    break;
-                case "translation":
-                    modelDisplayTransformBuilder
-                            .translation(jsonArray.get(0).getAsFloat(), jsonArray.get(1).getAsFloat(),
-                                    jsonArray.get(2).getAsFloat());
-                    break;
-                case "scale":
-                    modelDisplayTransformBuilder.scale(jsonArray.get(0).getAsFloat(), jsonArray.get(1).getAsFloat(),
-                            jsonArray.get(2).getAsFloat());
+            switch (entry.getKey()) {
+                case "rotation" ->
+                        modelDisplayTransformBuilder.rotation(jsonArray.get(0).getAsFloat(), jsonArray.get(1).getAsFloat(),
+                                jsonArray.get(2).getAsFloat());
+                case "translation" -> modelDisplayTransformBuilder
+                        .translation(jsonArray.get(0).getAsFloat(), jsonArray.get(1).getAsFloat(),
+                                jsonArray.get(2).getAsFloat());
+                case "scale" ->
+                        modelDisplayTransformBuilder.scale(jsonArray.get(0).getAsFloat(), jsonArray.get(1).getAsFloat(),
+                                jsonArray.get(2).getAsFloat());
             }
         }
     }
@@ -153,26 +139,21 @@ public class ModelJsonParser
             JsonObject elementJson = elementElement.getAsJsonObject();
             for (Map.Entry<String, JsonElement> entry : elementJson.entrySet())
             {
-                switch (entry.getKey())
-                {
-                    case "from":
-                        JsonArray jsonArray = entry.getValue().getAsJsonArray();
-                        elementBuilder.from(jsonArray.get(0).getAsFloat(), jsonArray.get(1).getAsFloat(),
-                                jsonArray.get(2).getAsFloat());
-                        break;
-                    case "to":
-                        jsonArray = entry.getValue().getAsJsonArray();
-                        elementBuilder.to(jsonArray.get(0).getAsFloat(), jsonArray.get(1).getAsFloat(),
-                                jsonArray.get(2).getAsFloat());
-                        break;
-                    case "rotation":
-                        consumeElementRotationJson(elementBuilder.rotation(), entry.getValue().getAsJsonObject());
-                        break;
-                    case "shade":
-                        elementBuilder.shade(entry.getValue().getAsBoolean());
-                        break;
-                    case "faces":
-                        consumeElementFacesJson(elementBuilder, entry.getValue().getAsJsonObject());
+                switch (entry.getKey()) {
+                    case "from" -> {
+                        JsonArray fromArray = entry.getValue().getAsJsonArray();
+                        elementBuilder.from(fromArray.get(0).getAsFloat(), fromArray.get(1).getAsFloat(),
+                                fromArray.get(2).getAsFloat());
+                    }
+                    case "to" -> {
+                        JsonArray toArray = entry.getValue().getAsJsonArray();
+                        elementBuilder.to(toArray.get(0).getAsFloat(), toArray.get(1).getAsFloat(),
+                                toArray.get(2).getAsFloat());
+                    }
+                    case "rotation" ->
+                            consumeElementRotationJson(elementBuilder.rotation(), entry.getValue().getAsJsonObject());
+                    case "shade" -> elementBuilder.shade(entry.getValue().getAsBoolean());
+                    case "faces" -> consumeElementFacesJson(elementBuilder, entry.getValue().getAsJsonObject());
                 }
             }
         }
@@ -184,21 +165,15 @@ public class ModelJsonParser
     {
         for (Map.Entry<String, JsonElement> entry : elementRotationJson.entrySet())
         {
-            switch (entry.getKey())
-            {
-                case "origin":
+            switch (entry.getKey()) {
+                case "origin" -> {
                     JsonArray jsonArray = entry.getValue().getAsJsonArray();
                     modelElementRotationBuilder.origin(jsonArray.get(0).getAsFloat(), jsonArray.get(1).getAsFloat(),
                             jsonArray.get(2).getAsFloat());
-                    break;
-                case "axis":
-                    modelElementRotationBuilder.axis(Direction.Axis.valueOf(entry.getValue().getAsString()));
-                    break;
-                case "angle":
-                    modelElementRotationBuilder.angle(entry.getValue().getAsFloat());
-                    break;
-                case "rescale":
-                    modelElementRotationBuilder.rescale(entry.getValue().getAsBoolean());
+                }
+                case "axis" -> modelElementRotationBuilder.axis(Direction.Axis.valueOf(entry.getValue().getAsString()));
+                case "angle" -> modelElementRotationBuilder.angle(entry.getValue().getAsFloat());
+                case "rescale" -> modelElementRotationBuilder.rescale(entry.getValue().getAsBoolean());
             }
         }
     }
@@ -212,39 +187,25 @@ public class ModelJsonParser
                     modelElementsBuilder.face(Direction.byName(face.getKey()));
             for (Map.Entry<String, JsonElement> facePart : face.getValue().getAsJsonObject().entrySet())
             {
-                switch (facePart.getKey())
-                {
-                    case "uv":
+                switch (facePart.getKey()) {
+                    case "uv" -> {
                         JsonArray jsonArray = facePart.getValue().getAsJsonArray();
                         faceBuilder.uvs(jsonArray.get(0).getAsFloat(), jsonArray.get(1).getAsFloat(),
                                 jsonArray.get(2).getAsFloat(), jsonArray.get(3).getAsFloat());
-                        break;
-                    case "texture":
-                        faceBuilder.texture(facePart.getValue().getAsString());
-                        break;
-                    case "cullface":
-                        faceBuilder.cullface(Direction.byName(facePart.getValue().getAsString()));
-                        break;
-                    case "rotation":
-                        ModelBuilder.FaceRotation rotation = null;
-                        switch (facePart.getValue().getAsInt())
-                        {
-                            case 0:
-                                rotation = ModelBuilder.FaceRotation.ZERO;
-                                break;
-                            case 90:
-                                rotation = ModelBuilder.FaceRotation.CLOCKWISE_90;
-                                break;
-                            case 180:
-                                rotation = ModelBuilder.FaceRotation.UPSIDE_DOWN;
-                                break;
-                            case 270:
-                                rotation = ModelBuilder.FaceRotation.COUNTERCLOCKWISE_90;
-                        }
+                    }
+                    case "texture" -> faceBuilder.texture(facePart.getValue().getAsString());
+                    case "cullface" -> faceBuilder.cullface(Direction.byName(facePart.getValue().getAsString()));
+                    case "rotation" -> {
+                        ModelBuilder.FaceRotation rotation = switch (facePart.getValue().getAsInt()) {
+                            case 0 -> ModelBuilder.FaceRotation.ZERO;
+                            case 90 -> ModelBuilder.FaceRotation.CLOCKWISE_90;
+                            case 180 -> ModelBuilder.FaceRotation.UPSIDE_DOWN;
+                            case 270 -> ModelBuilder.FaceRotation.COUNTERCLOCKWISE_90;
+                            default -> null;
+                        };
                         faceBuilder.rotation(rotation);
-                        break;
-                    case "tintindex":
-                        faceBuilder.tintindex(facePart.getValue().getAsInt());
+                    }
+                    case "tintindex" -> faceBuilder.tintindex(facePart.getValue().getAsInt());
                 }
             }
         }

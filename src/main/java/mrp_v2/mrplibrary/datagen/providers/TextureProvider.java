@@ -1,12 +1,13 @@
 package mrp_v2.mrplibrary.datagen.providers;
 
 import com.google.common.base.Preconditions;
-import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
+import com.google.common.hash.HashingOutputStream;
 import com.google.gson.*;
 import mrp_v2.mrplibrary.util.IModLocProvider;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
-import net.minecraft.data.HashCache;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.Resource;
@@ -27,8 +28,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public abstract class TextureProvider implements DataProvider, IModLocProvider
 {
@@ -37,13 +38,13 @@ public abstract class TextureProvider implements DataProvider, IModLocProvider
     public static int ALPHA_MASK = 0xFF000000;
     public final String modId;
     protected final ExistingFileHelper existingFileHelper;
-    protected final DataGenerator generator;
+    protected final PackOutput output;
     protected final Map<ResourceLocation, BufferedImage> providedTextures;
     protected final Map<ResourceLocation, TextureMetaBuilder> providedTextureMetas;
 
-    public TextureProvider(DataGenerator generator, ExistingFileHelper existingFileHelper, String modId)
+    public TextureProvider(PackOutput output, ExistingFileHelper existingFileHelper, String modId)
     {
-        this.generator = generator;
+        this.output = output;
         this.existingFileHelper = existingFileHelper;
         this.modId = modId;
         this.providedTextures = new HashMap<>();
@@ -225,7 +226,7 @@ public abstract class TextureProvider implements DataProvider, IModLocProvider
     }
 
     @Override
-    public void run(HashCache cache)
+    public CompletableFuture<?> run(CachedOutput cache)
     {
         addTextures(new FinishedTextureConsumer()
         {
@@ -252,6 +253,17 @@ public abstract class TextureProvider implements DataProvider, IModLocProvider
                 }
             }
         });
+        return CompletableFuture.allOf(
+                this.providedTextures.entrySet().stream().map(
+                        (entry) -> {
+                            if (providedTextureMetas.containsKey(entry.getKey())) {
+                                return CompletableFuture.allOf(saveTexture(cache, entry.getValue(), getTexturePath(entry.getKey())), saveTextureMeta(cache, providedTextureMetas.get(entry.getKey()), getTextureMetaPath(entry.getKey())));
+                            } else {
+                                return saveTexture(cache, entry.getValue(), getTexturePath(entry.getKey()));
+                            }
+                        }
+                ).toArray(CompletableFuture[]::new)
+        );
     }
 
     @Override public String getName()
@@ -261,62 +273,32 @@ public abstract class TextureProvider implements DataProvider, IModLocProvider
 
     protected abstract void addTextures(FinishedTextureConsumer consumer);
 
-    protected void saveTextureMeta(HashCache cache, TextureMetaBuilder metaBuilder, Path path)
-    {
-        String json = GSON.toJson(metaBuilder.toJson());
-        String hash = SHA1.hashUnencodedChars(json).toString();
-        if (!Objects.equals(cache.getHash(path), hash) || !Files.exists(path))
-        {
-            try
-            {
-                Files.createDirectories(path.getParent());
-            } catch (IOException ioException)
-            {
-                LOGGER.error("Couldn't create directory for texture {}", path, ioException);
-            }
-            try (BufferedWriter bufferedWriter = Files.newBufferedWriter(path))
-            {
-                bufferedWriter.write(json);
-            } catch (IOException ioException)
-            {
-                LOGGER.error("Couldn't save metadata for texture {}", path, ioException);
-            }
-        }
-        cache.putNew(path, hash);
+    protected CompletableFuture<?> saveTextureMeta(CachedOutput cache, TextureMetaBuilder metaBuilder, Path path) {
+        return DataProvider.saveStable(cache, metaBuilder.toJson(), path);
     }
 
     protected Path getTexturePath(ResourceLocation texture)
     {
-        return this.generator.getOutputFolder()
+        return this.output.getOutputFolder()
                 .resolve("assets/" + texture.getNamespace() + "/textures/" + texture.getPath() + ".png");
     }
 
-    protected void saveTexture(HashCache cache, BufferedImage texture, Path path)
+    protected CompletableFuture<?> saveTexture(CachedOutput cache, BufferedImage texture, Path path)
     {
-        Hasher hasher = SHA1.newHasher();
-        for (int i : texture.getRGB(0, 0, texture.getWidth(), texture.getHeight(), null, 0, texture.getWidth()))
-        {
-            hasher.putInt(i);
-        }
-        String hash = hasher.hash().toString();
-        if (!Objects.equals(cache.getHash(path), hash) || !Files.exists(path))
+        return CompletableFuture.runAsync(() ->
         {
             try
             {
+                ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
+                HashingOutputStream hashOutputStream = new HashingOutputStream(Hashing.sha1(), byteOutputStream);
                 Files.createDirectories(path.getParent());
-            } catch (IOException ioException)
+                ImageIO.write(texture, "png", hashOutputStream);
+                cache.writeIfNeeded(path, byteOutputStream.toByteArray(), hashOutputStream.hash());
+            } catch (IOException e)
             {
-                LOGGER.error("Couldn't create directory for texture {}", path, ioException);
+                LOGGER.error("Failed to save file to {}", path, e);
             }
-            try
-            {
-                ImageIO.write(texture, "png", path.toFile());
-            } catch (IOException ioException)
-            {
-                LOGGER.error("Couldn't save texture {}", path, ioException);
-            }
-        }
-        cache.putNew(path, hash);
+        });
     }
 
     protected static BufferedImage copyTexture(BufferedImage texture)
@@ -329,7 +311,7 @@ public abstract class TextureProvider implements DataProvider, IModLocProvider
 
     protected Path getTextureMetaPath(ResourceLocation texture)
     {
-        return this.generator.getOutputFolder()
+        return this.output.getOutputFolder()
                 .resolve("assets/" + texture.getNamespace() + "/textures/" + texture.getPath() + ".png.mcmeta");
     }
 
@@ -356,7 +338,10 @@ public abstract class TextureProvider implements DataProvider, IModLocProvider
             try
             {
                 Resource resource = existingFileHelper.getResource(loc, PackType.CLIENT_RESOURCES);
-                return Optional.of(TextureMetaBuilder.fromInputStream(resource.getInputStream()));
+                InputStream stream = resource.open();
+                TextureMetaBuilder builder = TextureMetaBuilder.fromInputStream(stream);
+                stream.close();
+                return Optional.of(builder);
             } catch (IOException ioException)
             {
                 LOGGER.error(String.format("Couldn't read texture metadata %s", textureLoc), ioException);
@@ -378,7 +363,10 @@ public abstract class TextureProvider implements DataProvider, IModLocProvider
         try
         {
             Resource resource = existingFileHelper.getResource(loc, PackType.CLIENT_RESOURCES);
-            return ImageIO.read(resource.getInputStream());
+            InputStream stream = resource.open();
+            BufferedImage result = ImageIO.read(stream);
+            stream.close();
+            return result;
         } catch (IOException ioException)
         {
             throw new RuntimeException(String.format("Error while reading texture %s", textureLoc), ioException);

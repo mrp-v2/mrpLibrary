@@ -1,9 +1,9 @@
 package mrp_v2.mrplibrary.datagen;
 
 import mrp_v2.mrplibrary.MrpLibrary;
+import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
 
 @Mod.EventBusSubscriber(modid = MrpLibrary.ID, bus = Mod.EventBusSubscriber.Bus.MOD) public class DataGenHandler
 {

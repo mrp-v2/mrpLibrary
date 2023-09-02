@@ -1,0 +1,6 @@
+{
+  "parent": "mrplibrary:block/tinted/orientable_with_bottom",
+  "textures": {
+    "bottom": "#top"
+  }
+}

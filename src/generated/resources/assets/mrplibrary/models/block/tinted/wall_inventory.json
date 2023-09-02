@@ -1,0 +1,114 @@
+{
+  "parent": "minecraft:block/block",
+  "display": {
+    "fixed": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "gui": {
+      "rotation": [
+        30,
+        135,
+        0
+      ],
+      "scale": [
+        0.625,
+        0.625,
+        0.625
+      ]
+    }
+  },
+  "elements": [
+    {
+      "faces": {
+        "down": {
+          "cullface": "down",
+          "texture": "#wall",
+          "tintindex": 0
+        },
+        "east": {
+          "texture": "#wall",
+          "tintindex": 0
+        },
+        "north": {
+          "texture": "#wall",
+          "tintindex": 0
+        },
+        "south": {
+          "texture": "#wall",
+          "tintindex": 0
+        },
+        "up": {
+          "texture": "#wall",
+          "tintindex": 0
+        },
+        "west": {
+          "texture": "#wall",
+          "tintindex": 0
+        }
+      },
+      "from": [
+        4,
+        0,
+        4
+      ],
+      "to": [
+        12,
+        16,
+        12
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "cullface": "down",
+          "texture": "#wall",
+          "tintindex": 0
+        },
+        "east": {
+          "texture": "#wall",
+          "tintindex": 0
+        },
+        "north": {
+          "cullface": "north",
+          "texture": "#wall",
+          "tintindex": 0
+        },
+        "south": {
+          "cullface": "south",
+          "texture": "#wall",
+          "tintindex": 0
+        },
+        "up": {
+          "texture": "#wall",
+          "tintindex": 0
+        },
+        "west": {
+          "texture": "#wall",
+          "tintindex": 0
+        }
+      },
+      "from": [
+        5,
+        0,
+        0
+      ],
+      "to": [
+        11,
+        13,
+        16
+      ]
+    }
+  ],
+  "textures": {
+    "particle": "#wall"
+  }
+}
