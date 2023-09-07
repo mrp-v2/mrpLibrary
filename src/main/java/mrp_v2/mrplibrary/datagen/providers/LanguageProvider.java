@@ -3,8 +3,8 @@ package mrp_v2.mrplibrary.datagen.providers;
 import mrp_v2.mrplibrary.util.IModLocProvider;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.data.PackOutput;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.world.item.CreativeModeTab;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,17 +35,6 @@ public abstract class LanguageProvider extends net.minecraftforge.common.data.La
         return modId;
     }
 
-    public void add(CreativeModeTab key, String name)
-    {
-        if (key.getDisplayName().getContents() instanceof TranslatableContents test)
-        {
-            add(test.getKey(), name);
-        } else
-        {
-            LOGGER.warn("Could not make a translation for " + key + " because its groupName is not a TranslationTextComponent!");
-        }
-    }
-
     public void add(KeyMapping keybind, String description, String category)
     {
         add(keybind, description);
@@ -60,5 +49,16 @@ public abstract class LanguageProvider extends net.minecraftforge.common.data.La
     public void add(TranslatableContents key, String name)
     {
         add(key.getKey(), name);
+    }
+
+    /**
+     * Assumes the content of the component is translatable. Will throw an error if not.
+     */
+    public void add(Component component, String name) {
+        if (component.getContents() instanceof TranslatableContents translatableContents) {
+            add(translatableContents, name);
+        } else {
+            throw new IllegalArgumentException("The content of the component was not translatable!");
+        }
     }
 }

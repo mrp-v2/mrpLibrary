@@ -55,11 +55,11 @@ public class DataGeneratorHelper
     }
 
     public void addParticleProvider(
-            BiFunction<PackOutput, String, ? extends ParticleDescriptionProvider> particleProviderConstructor)
+            Function3<PackOutput, String, ExistingFileHelper, ? extends ParticleDescriptionProvider> particleProviderConstructor)
     {
         if (includeClient)
         {
-            this.dataGenerator.addProvider(true, (DataProvider.Factory<? extends DataProvider>) output -> particleProviderConstructor.apply(output, this.modId));
+            this.dataGenerator.addProvider(true, (DataProvider.Factory<? extends DataProvider>) output -> particleProviderConstructor.apply(output, this.modId, this.existingFileHelper));
         }
     }
 
